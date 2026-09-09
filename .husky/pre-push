@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# Run static validation before push (fast checks only)
+
+set -eu
+
+if command -v bun >/dev/null 2>&1; then
+  if bun run --silent validate:static >/dev/null 2>&1; then
+    bun run validate:static
+  else
+    bun run lint --if-present
+    bun run typecheck --if-present
+  fi
+elif command -v npm >/dev/null 2>&1; then
+  npm run validate:static --if-present
+else
+  echo "pre-push: bun or npm is required to run static validation" >&2
+  exit 1
+fi

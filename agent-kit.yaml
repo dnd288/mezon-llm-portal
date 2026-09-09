@@ -1,0 +1,33 @@
+projectName: mezon-llm-portal
+prefix: mlp
+stack:
+  - React
+  - Next.js
+packageManager: bun
+monorepo: false
+includeOpenSpec: true
+includeClaude: false
+includeHooks: true
+includeCI: true
+optionalSkills:
+  - optimization-loop
+  - scenario-explorer
+installedSkills:
+  - review
+  - verify
+  - tdd
+  - bugfix
+  - refactor
+  - simplicity
+  - spec-workflow
+  - pr
+  - component-development
+  - ui-development
+  - app-development
+  - state-management
+  - design
+  - test
+  - security
+  - local-dev
+  - optimization-loop
+  - scenario-explorer
