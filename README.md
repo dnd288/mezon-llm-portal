@@ -1,36 +1,172 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/mezon-logo-horizontal.svg" alt="Mezon LLM" height="60" />
+</p>
 
-## Getting Started
+<h1 align="center">Mezon LLM Portal</h1>
 
-First, run the development server:
+<p align="center">
+  Customer Portal cho <a href="https://llm.mrdnd.dev">Mezon LLM</a> — quản lý API key, theo dõi sử dụng, và truy cập các mô hình AI hàng đầu.
+</p>
+
+<p align="center">
+  <a href="https://github.com/dnd288/mezon-llm-portal/actions"><img src="https://img.shields.io/github/actions/workflow/status/dnd288/mezon-llm-portal/ci.yml?branch=main&label=CI" alt="CI"></a>
+  <img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js 16">
+  <img src="https://img.shields.io/badge/TypeScript-5-blue" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Tailwind-4-38bdf8" alt="Tailwind v4">
+</p>
+
+---
+
+## Tính năng
+
+| Tính năng | Mô tả |
+|---|---|
+| **Trang chủ** | Giới thiệu sản phẩm, quick start code snippet, danh sách tool tương thích |
+| **Xác thực Mezon OAuth 2.0** | Đăng nhập bằng tài khoản Mezon, tự đồng bộ user với backend |
+| **Dashboard** | Số dư quota, thống kê sử dụng, nhập voucher, hướng dẫn cài đặt cho Claude Code / OpenCode / OMP / Cursor / Hermes |
+| **Quản lý API Key** | Tạo / xem / thu hồi API key (`sk-...`), hiển thị key một lần duy nhất với nút Copy |
+| **Bảng giá Model** | Danh sách 100+ model AI với giá theo quota, trạng thái, provider |
+| **Lịch sử sử dụng** | Bảng log chi tiết: model, token in/out, quota, thời gian |
+| **Lịch sử Voucher** | Lịch sử nạp voucher / redemption code |
+
+## Tech Stack
+
+- **Framework:** [Next.js 16](https://nextjs.org) (App Router, Server Components)
+- **Language:** TypeScript 5
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com) + [shadcn/ui v5](https://ui.shadcn.com)
+- **Auth:** Mezon OAuth 2.0 + JWT session (httpOnly cookie)
+- **Backend:** [mezon-llm](https://github.com/dnd288/mezon-llm) (new-api) — Go REST API
+- **Package manager:** [Bun](https://bun.sh)
+- **Dev methodology:** [agent-kit](https://github.com/dnd288/agent-kit) (18 skills, OpenSpec, CI)
+
+## Quick Start
+
+### 1. Clone & install
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/dnd288/mezon-llm-portal.git
+cd mezon-llm-portal
+bun install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Cấu hình environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cp .env.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Điền các giá trị cần thiết:
 
-## Learn More
+| Biến | Mô tả |
+|---|---|
+| `MEZON_CLIENT_ID` | Client ID từ [Mezon Developer Portal](https://mezon.ai/developers/applications) |
+| `MEZON_CLIENT_SECRET` | Client Secret |
+| `MEZON_REDIRECT_URI` | `http://localhost:3000/api/auth/callback` |
+| `NEW_API_BASE_URL` | URL backend mezon-llm (mặc định: `https://llm.mrdnd.dev`) |
+| `NEW_API_ADMIN_TOKEN` | Admin token để đồng bộ user |
+| `JWT_SECRET` | Chuỗi ngẫu nhiên 64 ký tự cho JWT session |
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Chạy dev server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+bun run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Mở [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+bun run dev              # Dev server (Turbopack)
+bun run build            # Production build
+bun run start            # Start production server
+bun run typecheck        # TypeScript check
+bun run lint             # ESLint
+bun run validate         # Typecheck + lint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Cấu trúc dự án
+
+```
+src/
+├── app/
+│   ├── layout.tsx                  # Root layout
+│   ├── page.tsx                    # Trang chủ (public)
+│   ├── login/page.tsx              # Đăng nhập Mezon OAuth
+│   ├── models/page.tsx             # Bảng giá model (public)
+│   ├── (portal)/                   # Layout cho user đã đăng nhập
+│   │   ├── layout.tsx              # Sidebar + header
+│   │   ├── dashboard/page.tsx      # Dashboard
+│   │   ├── tokens/page.tsx         # Quản lý API Key
+│   │   ├── logs/page.tsx           # Lịch sử sử dụng
+│   │   └── vouchers/page.tsx       # Lịch sử voucher
+│   └── api/
+│       ├── auth/                   # Mezon OAuth routes
+│       └── portal/                 # Backend proxy routes
+├── components/
+│   ├── ui/                         # shadcn/ui components
+│   ├── create-token-dialog.tsx     # Dialog tạo API key
+│   ├── voucher-dialog.tsx          # Dialog nhập voucher
+│   └── mobile-nav.tsx              # Nav responsive
+├── lib/
+│   ├── api.ts                      # Client gọi mezon-llm backend
+│   ├── auth.ts                     # JWT session management
+│   └── quota.ts                    # Format helpers
+└── middleware.ts                   # Route protection
+```
+
+## OAuth Flow
+
+```
+User ──▶ /login ──▶ /api/auth/login ──▶ Mezon OAuth
+                                              │
+  /dashboard ◀── set cookie ◀── /api/auth/callback
+                                    │
+                              exchange code ──▶ Mezon Token API
+                              get userinfo ──▶ Mezon Userinfo API
+                              sync user    ──▶ mezon-llm (new-api)
+                              create JWT session
+```
+
+## Deployment
+
+### Cloudflare Pages
+
+```bash
+bun run build
+# Deploy thư mục .next/ lên Cloudflare Pages
+```
+
+### Docker
+
+```dockerfile
+FROM oven/bun:1 AS builder
+WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+COPY . .
+RUN bun run build
+
+FROM oven/bun:1-slim
+WORKDIR /app
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+EXPOSE 3000
+CMD ["bun", "run", "start"]
+```
+
+## Agent Kit
+
+Dự án sử dụng [agent-kit](https://github.com/dnd288/agent-kit) với prefix `mlp`. Xem:
+
+- [`AGENTS.md`](AGENTS.md) — Quy tắc và boundaries cho coding agents
+- [`CONTEXT.md`](CONTEXT.md) — Glossary các thuật ngữ trong dự án
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — Hướng dẫn đóng góp
+- [`.agents/skills/`](.agents/skills/) — 18 methodology skills
+- [`openspec/`](openspec/) — Specification schemas
+
+## License
+
+MIT
