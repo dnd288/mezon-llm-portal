@@ -7,8 +7,10 @@ What `src/lib/api.ts` consumes. Base URL: `NEW_API_BASE_URL` (default `https://l
 | Function | Endpoint | Notes |
 |---|---|---|
 | `getSelf` | `GET /api/user/self` | `UserSelf`: id, username, display_name, quota, used_quota, request_count, etc. |
-| `adminSearchUsers` | `GET /api/user/search?keyword` | admin token; keyword = Mezon user id; used by OAuth callback |
-| `adminCreateUser` | `POST /api/user/` | admin token; username, display_name, random password |
+| `loginUser` | `POST /api/user/login` | `{username, password}` → `{access_token, access_expires_at, user}`; backend session token for user-scoped calls |
+| `adminSearchUsers` | `GET /api/user/search?keyword` | admin token; keyword = derived portal username; **paginated envelope** — users live in `data.items`, not `data` |
+| `adminCreateUser` | `POST /api/user/` | admin token; username, display_name, deterministic sync password; returns `{success, message}` — business failures arrive with HTTP 200 |
+| `adminUpdateUserPassword` | `PUT /api/user/` | admin token; `{id, username, display_name, password}` — re-syncs portal-owned account passwords |
 
 ## Tokens (API keys)
 

@@ -10,8 +10,12 @@ const SESSION_MAX_AGE = Number(process.env.SESSION_MAX_AGE) || 86400; // 24h
 export interface SessionPayload extends JWTPayload {
   /** new-api user id */
   userId: number;
-  /** new-api access token */
+  /** Mezon OAuth access token (userinfo only — not used for API calls) */
   accessToken: string;
+  /** new-api login session token; authorizes all user-scoped backend calls */
+  backendAccessToken: string;
+  /** unix seconds when backendAccessToken expires */
+  backendExpiresAt?: number;
   /** mezon username / display name */
   username: string;
   /** mezon user id from OAuth */

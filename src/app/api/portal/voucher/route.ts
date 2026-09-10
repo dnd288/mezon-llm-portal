@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
   try {
     const result = await redeemVoucher(key, {
-      accessToken: session.accessToken,
+      accessToken: session.backendAccessToken,
     });
     return NextResponse.json({
       success: true,

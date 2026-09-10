@@ -4,8 +4,12 @@ import {
   sessionCookieOptions,
 } from "@/lib/auth";
 import {
+  type AdminUserSummary,
   adminSearchUsers,
   adminCreateUser,
+  adminUpdateUserPassword,
+  deriveSyncPassword,
+  loginUser,
 } from "@/lib/api";
 
 const MEZON_TOKEN_URL =
@@ -27,13 +31,42 @@ interface MezonTokenResponse {
 
 interface MezonUserInfo {
   sub: string;
+  /** Real Mezon user id (short, numeric) — the identity Mezon documents */
+  user_id?: string | number;
   username?: string;
+  display_name?: string;
   email?: string;
-  preferred_username?: string;
   name?: string;
-  given_name?: string;
-  family_name?: string;
-  picture?: string;
+  preferred_username?: string;
+}
+
+// new-api caps Username at 20 chars (model/user.go). The portal anchors a
+// Mezon identity to a new-api account in this order:
+//   1. The Mezon username itself (`duong.nguyen`) when it satisfies new-api
+//      constraints — attaches to accounts the team created by hand.
+//   2. `mezon_<user_id>` when it fits (legacy short-id accounts).
+//   3. A deterministic `mz_<sha256-user_id>` fallback.
+const NEW_API_USERNAME_MAX = 20;
+const NEW_API_USERNAME_RE = /^[a-zA-Z0-9._-]+$/;
+
+function isUsableNewApiUsername(name: string): boolean {
+  return (
+    name.length > 0 &&
+    name.length <= NEW_API_USERNAME_MAX &&
+    NEW_API_USERNAME_RE.test(name)
+  );
+}
+
+async function hashUsername(mezonUserId: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(mezonUserId),
+  );
+  const hash = [...new Uint8Array(digest)]
+    .map((b) => b.toString(36))
+    .join("")
+    .slice(0, NEW_API_USERNAME_MAX - 3);
+  return `mz_${hash}`;
 }
 
 export async function GET(request: NextRequest) {
@@ -63,7 +96,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Exchange code for token — MUST use application/x-www-form-urlencoded
+    // Exchange code for token — form-encoded body with client credentials
+    // (Mezon/Hydra registers this client as token_endpoint_auth_method =
+    // client_secret_post; Basic auth is rejected)
     const tokenRes = await fetch(MEZON_TOKEN_URL, {
       method: "POST",
       headers: {
@@ -104,41 +139,109 @@ export async function GET(request: NextRequest) {
     }
 
     const userinfo: MezonUserInfo = await userinfoRes.json();
-    const mezonUserId = userinfo.sub;
-    const username = userinfo.preferred_username || userinfo.username || userinfo.name || `user_${mezonUserId}`;
-    const displayName = userinfo.name || userinfo.preferred_username || username;
+    // Prefer the real Mezon user id over Hydra's pairwise `sub` (long opaque
+    // string) — user_id keeps `mezon_<id>` usernames short and stable.
+    const mezonUserId = String(userinfo.user_id ?? userinfo.sub);
+    const username =
+      userinfo.username ||
+      userinfo.preferred_username ||
+      userinfo.name ||
+      `user_${mezonUserId}`;
+    const displayName =
+      userinfo.display_name ||
+      userinfo.name ||
+      userinfo.preferred_username ||
+      username;
 
-    // Sync with new-api backend using admin token
+    // Sync with new-api backend using admin token. Candidate usernames are
+    // tried in anchor order; the first exact match adopts that account.
     let newApiUserId: number | null = null;
+    let backendUsername = "";
+    const mezonHandle = username === `user_${mezonUserId}` ? "" : username;
+    const idDerived = `mezon_${mezonUserId}`;
+    const candidates = [
+      ...(isUsableNewApiUsername(mezonHandle) ? [mezonHandle] : []),
+      ...(isUsableNewApiUsername(idDerived) ? [idDerived] : []),
+      await hashUsername(mezonUserId),
+    ];
 
     if (NEW_API_ADMIN_TOKEN) {
-      // Search for existing user by mezon user id (stored in username or aff_code)
-      const existingUsers = await adminSearchUsers(mezonUserId, {
-        adminToken: NEW_API_ADMIN_TOKEN,
-      });
+      let adopted: AdminUserSummary | undefined;
+      for (const candidate of candidates) {
+        const found = await adminSearchUsers(candidate, {
+          adminToken: NEW_API_ADMIN_TOKEN,
+        });
+        // Exact matches only: the backend LIKE search returns substrings.
+        // Adopting a non-common role would leak elevated rights into the
+        // portal; disabled accounts stay unlinked too.
+        const exact = found.find((u) => u.username === candidate);
+        if (exact) {
+          if (exact.role !== undefined && exact.role !== 1) {
+            console.error(
+              `new-api account ${candidate} has role ${exact.role}; refusing to adopt`,
+            );
+            break;
+          }
+          if (exact.status !== undefined && exact.status !== 1) {
+            console.error(
+              `new-api account ${candidate} is disabled (status ${exact.status}); refusing to adopt`,
+            );
+            break;
+          }
+          adopted = exact;
+          break;
+        }
+      }
 
-      if (existingUsers && existingUsers.length > 0) {
-        const user = existingUsers[0] as { id: number; username: string };
-        newApiUserId = user.id;
+      if (adopted) {
+        newApiUserId = adopted.id;
+        backendUsername = adopted.username;
+        // Re-sync the password so the server can always mint a backend
+        // login session (covers hand-created accounts and legacy ghost
+        // accounts whose creation-time password was discarded).
+        const updated = await adminUpdateUserPassword(
+          {
+            id: adopted.id,
+            username: adopted.username,
+            display_name: adopted.display_name || displayName,
+            password: deriveSyncPassword(mezonUserId),
+            group: adopted.group,
+          },
+          { adminToken: NEW_API_ADMIN_TOKEN },
+        );
+        if (updated?.success === false) {
+          console.error(
+            "new-api password sync rejected:",
+            updated.message ?? "unknown error",
+          );
+        }
       } else {
-        // Create new user in new-api
-        const createPayload = {
-          username: `mezon_${mezonUserId}`,
-          display_name: displayName,
-          password: crypto.randomUUID(),
-        };
+        // No existing account: create under the highest-priority anchor
+        const createName = candidates[0];
+        const created = await adminCreateUser(
+          {
+            username: createName,
+            display_name: displayName,
+            password: deriveSyncPassword(mezonUserId),
+          },
+          { adminToken: NEW_API_ADMIN_TOKEN },
+        );
+        if (created?.success === false) {
+          console.error(
+            "new-api user create rejected:",
+            created.message ?? "unknown error",
+          );
+        }
 
-        await adminCreateUser(createPayload, {
+        const createdUsers = await adminSearchUsers(createName, {
           adminToken: NEW_API_ADMIN_TOKEN,
         });
-
-        // Search again to get the created user id
-        const createdUsers = await adminSearchUsers(mezonUserId, {
-          adminToken: NEW_API_ADMIN_TOKEN,
-        });
-        if (createdUsers && createdUsers.length > 0) {
-          const user = createdUsers[0] as { id: number };
-          newApiUserId = user.id;
+        const createdExact = createdUsers.find(
+          (u) => u.username === createName,
+        );
+        if (createdExact) {
+          newApiUserId = createdExact.id;
+          backendUsername = createName;
         }
       }
     }
@@ -150,10 +253,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Mint a backend session for the synced user; all user-scoped portal
+    // calls run with this token, not the Mezon OAuth token.
+    let backendSession;
+    try {
+      backendSession = await loginUser(
+        backendUsername,
+        deriveSyncPassword(mezonUserId),
+      );
+    } catch (loginError) {
+      console.error("new-api login failed:", loginError);
+      return NextResponse.redirect(
+        new URL("/login?error=backend_login_failed", request.url),
+      );
+    }
+
     // Create JWT session
     const sessionToken = await createSession({
       userId: newApiUserId,
       accessToken: mezonAccessToken,
+      backendAccessToken: backendSession.accessToken,
+      backendExpiresAt: backendSession.expiresAt,
       username,
       mezonUserId,
     });

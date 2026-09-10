@@ -39,7 +39,7 @@ export default async function LogsPage({
   let logsData;
   try {
     logsData = await getUserLogs({
-      accessToken: session.accessToken,
+      accessToken: session.backendAccessToken,
       page: apiPage,
       size: PAGE_SIZE,
     });

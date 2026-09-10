@@ -81,7 +81,7 @@ export default async function DashboardPage() {
   let user;
 
   try {
-    user = await getSelf({ accessToken: session.accessToken });
+    user = await getSelf({ accessToken: session.backendAccessToken });
   } catch {
     user = null;
   }

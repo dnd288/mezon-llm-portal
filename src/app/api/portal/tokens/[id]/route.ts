@@ -24,7 +24,7 @@ export async function DELETE(
   }
 
   try {
-    await deleteToken(tokenId, { accessToken: session.accessToken });
+    await deleteToken(tokenId, { accessToken: session.backendAccessToken });
     return NextResponse.json({ success: true });
   } catch (err) {
     const message =
@@ -59,7 +59,7 @@ export async function POST(
 
   try {
     const key = await getTokenKey(tokenId, {
-      accessToken: session.accessToken,
+      accessToken: session.backendAccessToken,
     });
     return NextResponse.json({ success: true, data: key });
   } catch (err) {

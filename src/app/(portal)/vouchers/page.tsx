@@ -62,7 +62,7 @@ export default async function VouchersPage() {
 
   let topUps: TopUpRecord[];
   try {
-    topUps = await getUserTopUps({ accessToken: session.accessToken });
+    topUps = await getUserTopUps({ accessToken: session.backendAccessToken });
   } catch {
     topUps = [];
   }
