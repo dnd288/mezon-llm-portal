@@ -1,9 +1,3 @@
-URL: https://raw.githubusercontent.com/dnd288/agent-kit/main/cli/kit/openspec/schemas/cross-cutting/templates/verification.md
-Content-Type: text/plain
-Method: text
-
----
-
 # Verification
 
 What actually happened, not what was expected to happen. This artifact is the difference

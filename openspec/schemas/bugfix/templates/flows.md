@@ -1,9 +1,3 @@
-URL: https://raw.githubusercontent.com/dnd288/agent-kit/main/cli/kit/openspec/schemas/bugfix/templates/flows.md
-Content-Type: text/plain
-Method: text
-
----
-
 # Flows
 
 The end-to-end features this change is proven by. Written BEFORE the interface, the specs

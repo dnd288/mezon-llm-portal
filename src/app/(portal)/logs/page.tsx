@@ -59,7 +59,7 @@ export default async function LogsPage({
           <FileText className="h-6 w-6" />
           Nhật ký sử dụng
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-[var(--mut)] mt-1">
           Xem lịch sử sử dụng API và quota đã tiêu thụ.
         </p>
       </div>
@@ -73,7 +73,7 @@ export default async function LogsPage({
         </CardHeader>
         <CardContent>
           {logs.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
+            <div className="py-12 text-center text-[var(--mut)]">
               Chưa có dữ liệu sử dụng.
             </div>
           ) : (
@@ -96,7 +96,7 @@ export default async function LogsPage({
                         {formatDate(log.created_at)}
                       </TableCell>
                       <TableCell>
-                        <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                        <code className="text-xs bg-[var(--surf2)] px-1.5 py-0.5 rounded">
                           {log.model_name || "—"}
                         </code>
                       </TableCell>
@@ -119,7 +119,7 @@ export default async function LogsPage({
 
               {/* Pagination */}
               <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-[var(--mut)]">
                   Trang {currentPage} / {totalPages}
                 </div>
                 <div className="flex items-center gap-2">

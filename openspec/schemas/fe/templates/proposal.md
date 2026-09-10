@@ -1,9 +1,3 @@
-URL: https://raw.githubusercontent.com/dnd288/agent-kit/main/cli/kit/openspec/schemas/fe/templates/proposal.md
-Content-Type: text/plain
-Method: text
-
----
-
 ## Why
 
 <!-- Explain the motivation for this change. What problem does this solve? Why now? -->

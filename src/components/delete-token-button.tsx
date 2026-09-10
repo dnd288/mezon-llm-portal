@@ -52,7 +52,7 @@ export function DeleteTokenButton({ id, name }: { id: number; name: string }) {
       <DialogTrigger
         render={
           <Button variant="ghost" size="icon-sm">
-            <Trash2 className="h-4 w-4 text-destructive" />
+            <Trash2 className="h-4 w-4 text-[var(--bad)]" />
             <span className="sr-only">Xóa key {name}</span>
           </Button>
         }

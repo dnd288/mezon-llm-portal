@@ -26,15 +26,15 @@ function getStatusBadge(token: {
   expired_time: number;
 }) {
   if (token.status !== 1) {
-    return <Badge variant="destructive">Revoked</Badge>;
+    return <Badge variant="revoked">Revoked</Badge>;
   }
   if (
     token.expired_time > 0 &&
     token.expired_time < Math.floor(Date.now() / 1000)
   ) {
-    return <Badge variant="secondary">Hết hạn</Badge>;
+    return <Badge variant="expired">Hết hạn</Badge>;
   }
-  return <Badge variant="default">Active</Badge>;
+  return <Badge variant="active">Active</Badge>;
 }
 
 export default async function TokensPage() {
@@ -57,7 +57,7 @@ export default async function TokensPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">API Keys</h1>
-          <p className="text-muted-foreground">
+          <p className="text-[var(--mut)]">
             Quản lý các API key để truy cập Mezon LLM.
           </p>
         </div>
@@ -73,8 +73,8 @@ export default async function TokensPage() {
       ) : tokens.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Key className="mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="text-muted-foreground">
+            <Key className="mb-4 h-12 w-12 text-[var(--mut)]" />
+            <p className="text-[var(--mut)]">
               Bạn chưa có API key nào. Tạo key đầu tiên để bắt đầu.
             </p>
           </CardContent>

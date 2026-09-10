@@ -39,8 +39,8 @@ export default async function PortalLayout({
   return (
     <div className="flex min-h-screen">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r bg-muted/30 md:flex">
-        <div className="flex h-14 items-center gap-2 border-b px-4">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-[var(--bd)] bg-[var(--surf)]/30 md:flex">
+        <div className="flex h-14 items-center gap-2 border-b border-[var(--bd)] px-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -56,7 +56,7 @@ export default async function PortalLayout({
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--mut)] transition-colors hover:bg-[var(--surf2)] hover:text-[var(--tx)]"
             >
               <item.icon className="h-4 w-4" />
               {item.label}
@@ -68,7 +68,7 @@ export default async function PortalLayout({
           <p className="truncate px-2 text-sm font-medium">
             {session.username}
           </p>
-          <p className="truncate px-2 text-xs text-muted-foreground">
+          <p className="truncate px-2 text-xs text-[var(--mut)]">
             ID: {session.userId}
           </p>
         </div>
@@ -77,7 +77,7 @@ export default async function PortalLayout({
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Header */}
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b border-[var(--bd)] bg-[var(--bg)]/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-[var(--bg)]/60">
           <div className="flex items-center gap-2">
             {/* Mobile hamburger */}
             <MobileNav />
@@ -95,7 +95,7 @@ export default async function PortalLayout({
             </Link>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-muted-foreground sm:inline">
+            <span className="hidden text-sm text-[var(--mut)] sm:inline">
               {session.username}
             </span>
             <a

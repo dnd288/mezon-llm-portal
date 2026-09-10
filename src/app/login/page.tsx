@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4">
+      <Card className="w-full max-w-md bg-[var(--surfS)] border-[var(--bd)] rounded-[var(--r)]" style={{ boxShadow: "var(--shadow)" }}>
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
             <Image
@@ -24,8 +24,8 @@ export default function LoginPage() {
               className="h-16 w-16"
             />
           </div>
-          <CardTitle className="text-2xl">Đăng nhập</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl text-[var(--tx)]">Đăng nhập</CardTitle>
+          <CardDescription className="text-[var(--mut)]">
             Đăng nhập vào Mezon LLM để quản lý API key và theo dõi sử dụng
           </CardDescription>
         </CardHeader>
@@ -43,7 +43,7 @@ export default function LoginPage() {
             />
             Đăng nhập bằng Mezon
           </Link>
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-center text-xs text-[var(--mut)]">
             Bạn sẽ được chuyển hướng đến trang đăng nhập của Mezon
           </p>
         </CardContent>

@@ -1,9 +1,3 @@
-URL: https://raw.githubusercontent.com/dnd288/agent-kit/main/cli/kit/openspec/schemas/integration/schema.yaml
-Content-Type: text/plain
-Method: text
-
----
-
 name: integration
 version: 2
 description: "Integration - wiring the layers into a working application, and turning the pending flows green."
@@ -78,7 +72,7 @@ artifacts:
 
       Every task carries what proves it. A task with no verify command cannot be handed to anyone.
 
-      **Surfaces**: `your end-to-end feature directory<split>/<n>.feature` — Gherkin the business reads — with its sentences implemented in `your end-to-end steps directory<domain>.steps.ts`, locators and their reasoning in `e2e/pom/`, and `mlp-test`/`expect` from `../fixtures/index.js`. A sentence with no step behind it fails `bddgen` before a browser starts. One Playwright project, desktop Chromium; a viewport claim says its width in the scenario. The e2e mode is not in CI by default — it needs Chromium, a the database and two servers — so say plainly which selection was run and which was not.
+      **Surfaces**: `your end-to-end feature directory<split>/<n>.feature` — Gherkin the business reads — with its sentences implemented in `your end-to-end steps directory<domain>.steps.ts`, locators and their reasoning in `e2e/pom/`, and `test`/`expect` from `../fixtures/index.js`. A sentence with no step behind it fails `bddgen` before a browser starts. One Playwright project, desktop Chromium; a viewport claim says its width in the scenario. The e2e mode is not in CI by default — it needs Chromium, a the database and two servers — so say plainly which selection was run and which was not.
     requires:
       - flows
       - specs

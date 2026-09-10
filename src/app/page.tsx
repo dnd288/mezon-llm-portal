@@ -67,7 +67,7 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b border-[var(--bd)] bg-[var(--bg)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--bg)]/60">
         <div className="container flex h-16 items-center justify-between mx-auto px-4">
           <Link href="/" className="flex items-center gap-2">
             <Image
@@ -83,7 +83,7 @@ export default async function HomePage() {
           <nav className="flex items-center gap-4">
             <Link
               href="/models"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-[var(--mut)] hover:text-[var(--tx)] transition-colors"
             >
               Bảng giá
             </Link>
@@ -110,15 +110,15 @@ export default async function HomePage() {
       <section className="flex-1">
         <div className="container mx-auto px-4 py-24 text-center">
           <div className="mx-auto max-w-3xl space-y-6">
-            <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm text-muted-foreground">
+            <div className="inline-flex items-center rounded-full border border-[var(--bd)] px-3 py-1 text-sm text-[var(--mut)]">
               ✨ Powered by Mezon
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
               Unified AI API
               <br />
-              <span className="text-primary">cho mọi công cụ</span>
+              <span className="text-brand-gradient">cho mọi công cụ</span>
             </h1>
-            <p className="mx-auto max-w-xl text-lg text-muted-foreground">
+            <p className="mx-auto max-w-xl text-lg text-[var(--mut)]">
               Một API key, hàng trăm mô hình AI. Tương thích hoàn toàn với
               OpenAI SDK. Bắt đầu trong 30 giây.
             </p>
@@ -143,17 +143,17 @@ export default async function HomePage() {
 
           {/* Quick Start Code */}
           <div className="mx-auto mt-16 max-w-2xl">
-            <Card className="text-left bg-zinc-950 text-zinc-50 border-zinc-800">
+            <Card className="text-left bg-[var(--code)] text-[var(--codeTx)] border-[rgba(255,255,255,0.07)] rounded-[var(--r)]">
               <CardContent className="p-6">
-                <div className="flex items-center gap-2 text-xs text-zinc-400 mb-3">
+                <div className="flex items-center gap-2 text-xs text-[var(--mut)] mb-3">
                   <div className="flex gap-1.5">
-                    <div className="h-3 w-3 rounded-full bg-red-500/80" />
-                    <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
-                    <div className="h-3 w-3 rounded-full bg-green-500/80" />
+                    <div className="h-3 w-3 rounded-full bg-[var(--bad)]" />
+                    <div className="h-3 w-3 rounded-full bg-[var(--warn)]" />
+                    <div className="h-3 w-3 rounded-full bg-[var(--ok)]" />
                   </div>
                   <span>Quick Start</span>
                 </div>
-                <pre className="text-sm leading-relaxed overflow-x-auto">
+                <pre className="text-sm leading-[1.85] font-mono overflow-x-auto">
                   <code>{`export OPENAI_API_KEY="sk-your-key-here"
 export OPENAI_BASE_URL="https://llm.mrdnd.dev/v1"
 
@@ -174,19 +174,19 @@ curl $OPENAI_BASE_URL/chat/completions \\
             <h2 className="text-3xl font-bold tracking-tight">
               Mọi thứ bạn cần
             </h2>
-            <p className="mt-4 text-muted-foreground">
+            <p className="mt-4 text-[var(--mut)]">
               Từ API management đến usage tracking — tất cả trong một portal.
             </p>
           </div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
-              <Card key={f.title} className="border-0 shadow-none bg-muted/50">
+              <Card key={f.title} className="border border-[var(--bd)] shadow-none bg-[var(--surf)] rounded-[var(--r)]">
                 <CardContent className="p-6 space-y-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <f.icon className="h-5 w-5 text-primary" />
+                  <div className="h-10 w-10 rounded-[var(--rs)] bg-[color-mix(in_oklab,var(--g2)_14%,transparent)] flex items-center justify-center">
+                    <f.icon className="h-5 w-5 text-[var(--acc)]" />
                   </div>
                   <h3 className="font-semibold">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-[var(--mut)]">
                     {f.description}
                   </p>
                 </CardContent>
@@ -204,7 +204,7 @@ curl $OPENAI_BASE_URL/chat/completions \\
             {tools.map((tool) => (
               <div
                 key={tool.name}
-                className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm"
+                className="flex items-center gap-2 rounded-full border border-[var(--bd)] px-4 py-2 text-sm text-[var(--tx)] bg-[var(--surf2)]"
               >
                 <span>{tool.icon}</span>
                 <span>{tool.name}</span>
@@ -215,9 +215,9 @@ curl $OPENAI_BASE_URL/chat/completions \\
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8">
+      <footer className="border-t border-[var(--bd)] py-8">
         <div className="container mx-auto px-4 flex flex-col items-center justify-between gap-4 md:flex-row">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-[var(--mut)]">
             <Image
               src="/mezon-logo-icon.svg"
               alt="Mezon"
@@ -226,15 +226,15 @@ curl $OPENAI_BASE_URL/chat/completions \\
             />
             <span>© 2025 Mezon LLM. All rights reserved.</span>
           </div>
-          <nav className="flex gap-4 text-sm text-muted-foreground">
-            <Link href="/models" className="hover:text-foreground">
+          <nav className="flex gap-4 text-sm text-[var(--mut)]">
+            <Link href="/models" className="hover:text-[var(--tx)]">
               Bảng giá
             </Link>
             <a
               href="https://mezon.ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-foreground"
+              className="hover:text-[var(--tx)]"
             >
               Mezon
             </a>

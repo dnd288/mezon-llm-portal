@@ -1,9 +1,3 @@
-URL: https://raw.githubusercontent.com/dnd288/agent-kit/main/cli/kit/openspec/schemas/bugfix/templates/verification.md
-Content-Type: text/plain
-Method: text
-
----
-
 # Verification
 
 What actually happened, not what was expected to happen. A fix with no RED is a change that

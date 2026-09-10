@@ -1,9 +1,3 @@
-URL: https://raw.githubusercontent.com/dnd288/agent-kit/main/cli/kit/openspec/schemas/fe/templates/decision.md
-Content-Type: text/plain
-Method: text
-
----
-
 # [Decision title — what was decided, not what was considered]
 
 **Status:** Proposed · **Date:** [DD Month YYYY] · **Deciders:** [who]
