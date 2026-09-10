@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   try {
-    const tokens = await getTokens({ accessToken: session.accessToken });
+    const tokens = await getTokens({ accessToken: session.backendAccessToken });
     return NextResponse.json({ success: true, data: tokens });
   } catch (err) {
     const message =
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         remain_quota,
         unlimited_quota,
       },
-      { accessToken: session.accessToken },
+      { accessToken: session.backendAccessToken },
     );
 
     return NextResponse.json({ success: true, data: token });

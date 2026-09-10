@@ -55,16 +55,22 @@ bun install
 cp .env.example .env.local
 ```
 
-Điền các giá trị cần thiết:
+Điền các giá trị cần thiết (đầy đủ trong `.env.example`):
 
 | Biến | Mô tả |
 |---|---|
 | `MEZON_CLIENT_ID` | Client ID từ [Mezon Developer Portal](https://mezon.ai/developers/applications) |
 | `MEZON_CLIENT_SECRET` | Client Secret |
 | `MEZON_REDIRECT_URI` | `http://localhost:3000/api/auth/callback` |
+| `MEZON_AUTH_URL` | OAuth authorize endpoint (mặc định: `https://oauth2.mezon.ai/oauth2/auth`) |
+| `MEZON_TOKEN_URL` | OAuth token endpoint (mặc định: `https://oauth2.mezon.ai/oauth2/token`) |
+| `MEZON_USERINFO_URL` | OAuth userinfo endpoint (mặc định: `https://oauth2.mezon.ai/userinfo`) |
 | `NEW_API_BASE_URL` | URL backend mezon-llm (mặc định: `https://llm.mrdnd.dev`) |
 | `NEW_API_ADMIN_TOKEN` | Admin token để đồng bộ user |
 | `JWT_SECRET` | Chuỗi ngẫu nhiên 64 ký tự cho JWT session |
+| `SESSION_MAX_AGE` | Thời gian sống session, giây (mặc định: `86400`) |
+| `NEXT_PUBLIC_APP_URL` | URL gốc của portal (mặc định: `http://localhost:3000`) |
+| `NEXT_PUBLIC_APP_NAME` | Tên hiển thị của sản phẩm (mặc định: `Mezon LLM`) |
 
 ### 3. Chạy dev server
 
@@ -101,12 +107,13 @@ src/
 │   │   ├── logs/page.tsx           # Lịch sử sử dụng
 │   │   └── vouchers/page.tsx       # Lịch sử voucher
 │   └── api/
-│       ├── auth/                   # Mezon OAuth routes
-│       └── portal/                 # Backend proxy routes
+│       ├── auth/                   # Mezon OAuth routes (login, callback, session, logout)
+│       └── portal/                 # Backend proxy routes (tokens, logs, voucher)
 ├── components/
 │   ├── ui/                         # shadcn/ui components
 │   ├── create-token-dialog.tsx     # Dialog tạo API key
 │   ├── voucher-dialog.tsx          # Dialog nhập voucher
+│   ├── delete-token-button.tsx    # Nút thu hồi API key
 │   └── mobile-nav.tsx              # Nav responsive
 ├── lib/
 │   ├── api.ts                      # Client gọi mezon-llm backend
@@ -156,6 +163,17 @@ COPY --from=builder /app/node_modules ./node_modules
 EXPOSE 3000
 CMD ["bun", "run", "start"]
 ```
+
+## Project documentation
+
+- [`docs/README.md`](docs/README.md) — Documentation index
+- [`docs/product/prd.md`](docs/product/prd.md) — Product requirements and accepted scope
+- [`docs/product/open-questions.md`](docs/product/open-questions.md) — Open questions that gate changes
+- [`docs/engineering/architecture.md`](docs/engineering/architecture.md) — Architecture and data-flow boundaries
+- [`docs/engineering/authentication.md`](docs/engineering/authentication.md) — Mezon OAuth and session model
+- [`docs/engineering/backend-api.md`](docs/engineering/backend-api.md) — new-api boundary and portal proxy routes
+- [`docs/engineering/testing.md`](docs/engineering/testing.md) — Validation and test-stack status
+- [`docs/adr/`](docs/adr/) — Architecture decisions
 
 ## Agent Kit
 

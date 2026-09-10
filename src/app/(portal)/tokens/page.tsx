@@ -47,7 +47,7 @@ export default async function TokensPage() {
   let error: string | null = null;
 
   try {
-    tokens = await getTokens({ accessToken: session.accessToken });
+    tokens = await getTokens({ accessToken: session.backendAccessToken });
   } catch (err) {
     error = err instanceof Error ? err.message : "Không thể tải danh sách key";
   }

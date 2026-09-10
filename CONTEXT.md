@@ -88,7 +88,7 @@ Use when: Displaying user balance, token usage costs, voucher amounts.
 
 Do not use for: Rate limits, concurrency caps, or API call counts.
 
-Related: `src/lib/quota.ts`, `src/lib/api.ts`
+Related: `src/lib/quota.ts`, `src/lib/api.ts`, `docs/product/prd.md` (FR-3, FR-6), `docs/engineering/backend-api.md`
 
 ### Token (API Key)
 
@@ -98,7 +98,7 @@ Use when: Describing API key management — creation, listing, revocation, quota
 
 Do not use for: LLM tokens (input/output text units), JWT session tokens, or OAuth access tokens.
 
-Related: `src/app/(portal)/tokens/`, `src/app/api/portal/tokens/`
+Related: `src/app/(portal)/tokens/`, `src/app/api/portal/tokens/`, `docs/product/prd.md` (FR-4), `docs/engineering/backend-api.md`
 
 ### Token (LLM)
 
@@ -108,7 +108,7 @@ Use when: Displaying usage statistics in logs and dashboard.
 
 Do not use for: API keys or session credentials.
 
-Related: `src/app/(portal)/logs/`
+Related: `src/app/(portal)/logs/`, `docs/product/prd.md` (FR-5), `docs/engineering/backend-api.md`
 
 ### Voucher / Redemption Code
 
@@ -118,7 +118,7 @@ Use when: The voucher input dialog, voucher history page, or top-up API.
 
 Do not use for: Subscription plans, payment transactions, or affiliate codes.
 
-Related: `src/components/voucher-dialog.tsx`, `src/app/(portal)/vouchers/`
+Related: `src/components/voucher-dialog.tsx`, `src/app/(portal)/vouchers/`, `docs/product/prd.md` (FR-6), `docs/engineering/backend-api.md`
 
 ### new-api
 
@@ -128,7 +128,7 @@ Use when: Referring to the backend API, its endpoints, or its data model.
 
 Do not use for: This Next.js portal application itself.
 
-Related: `~/src/mezon-llm`, `src/lib/api.ts`
+Related: `~/src/mezon-llm`, `src/lib/api.ts`, `docs/engineering/architecture.md`, `docs/engineering/backend-api.md`
 
 ### Channel
 
@@ -146,4 +146,4 @@ Use when: Authentication flow, middleware guards, API route authorization.
 
 Do not use for: Browser sessionStorage, OAuth session state, or new-api login sessions.
 
-Related: `src/lib/auth.ts`, `src/middleware.ts`
+Related: `src/lib/auth.ts`, `src/middleware.ts`, `docs/product/prd.md` (FR-1, FR-7), `docs/engineering/authentication.md`

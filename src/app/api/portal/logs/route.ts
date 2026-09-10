@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
   try {
     const result = await getUserLogs({
-      accessToken: session.accessToken,
+      accessToken: session.backendAccessToken,
       page,
       size,
     });

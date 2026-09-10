@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+
 /**
  * API client for the Mezon LLM (new-api) backend.
  *
@@ -306,31 +308,119 @@ export async function getUserQuotaDates(
 }
 
 // ──────────────────────────────────────────────
-// Admin: User management (for OAuth sync)
+// Portal↔backend identity sync
 // ──────────────────────────────────────────────
 
-export async function adminCreateUser(
+/**
+ * Deterministic new-api password for a Mezon identity. The portal never
+ * stores credentials: the server re-derives this value on demand (HMAC over
+ * a server-only secret), so it can always mint a backend login session for
+ * a synced user.
+ */
+export function deriveSyncPassword(mezonUserId: string): string {
+  const secret =
+    process.env.NEW_API_SYNC_SECRET || process.env.JWT_SECRET || "";
+  return crypto
+    .createHmac("sha256", secret)
+    .update(mezonUserId)
+    .digest("hex");
+}
+
+/**
+ * Reset a user's password via the admin API. The backend PUT zeroes fields
+ * absent from the payload (group was observed to vanish), so callers must
+ * pass the account's current group through.
+ */
+export async function adminUpdateUserPassword(
   payload: {
+    id: number;
     username: string;
     display_name: string;
     password: string;
+    group?: string;
   },
   opts: ApiOptions,
-): Promise<unknown> {
-  return request("/api/user/", {
+): Promise<AdminMutationResult> {
+  return request<AdminMutationResult>("/api/user/", {
+    ...opts,
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export interface BackendLoginSession {
+  accessToken: string;
+  expiresAt: number;
+}
+
+/** Password login against new-api; returns the backend session token. */
+export async function loginUser(
+  username: string,
+  password: string,
+): Promise<BackendLoginSession> {
+  const res = await request<{
+    success: boolean;
+    data: { access_token: string; access_expires_at: number };
+  }>("/api/user/login", {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+  });
+  return {
+    accessToken: res.data.access_token,
+    expiresAt: res.data.access_expires_at,
+  };
+}
+
+// ──────────────────────────────────────────────
+// Admin: User management (for OAuth sync)
+// ──────────────────────────────────────────────
+export interface AdminMutationResult {
+  success: boolean;
+  message?: string;
+}
+
+export async function adminCreateUser(payload: {
+  username: string;
+  display_name: string;
+  password: string;
+}, opts: ApiOptions): Promise<AdminMutationResult> {
+  return request<AdminMutationResult>("/api/user/", {
     ...opts,
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
+export interface AdminUserSummary {
+  id: number;
+  username: string;
+  display_name?: string;
+  role?: number;
+  status?: number;
+  /** Backend access group (e.g. "default", "vip"); PUT wipes it when absent */
+  group?: string;
+}
+
+function isAdminUserSummary(u: unknown): u is AdminUserSummary {
+  if (typeof u !== "object" || u === null) return false;
+  if (!("id" in u) || typeof u.id !== "number") return false;
+  if (!("username" in u) || typeof u.username !== "string") return false;
+  if ("role" in u && typeof u.role !== "number") return false;
+  if ("status" in u && typeof u.status !== "number") return false;
+  if ("group" in u && typeof u.group !== "string") return false;
+  return true;
+}
+
 export async function adminSearchUsers(
   keyword: string,
   opts: ApiOptions,
-): Promise<unknown[]> {
-  const res = await request<{ success: boolean; data: unknown[] }>(
-    `/api/user/search?keyword=${encodeURIComponent(keyword)}`,
-    { ...opts },
-  );
-  return res.data;
+): Promise<AdminUserSummary[]> {
+  // /api/user/search returns a paginated envelope: {data: {page, items, ...}}
+  const res = await request<{
+    success: boolean;
+    data: { items?: unknown[] } | unknown[];
+  }>(`/api/user/search?keyword=${encodeURIComponent(keyword)}`, { ...opts });
+  const data = res.data;
+  const items = Array.isArray(data) ? data : (data.items ?? []);
+  return items.filter(isAdminUserSummary);
 }
