@@ -4,38 +4,56 @@ Method: text
 
 ---
 
-# OpenSpec project configuration template.
+# OpenSpec project configuration for Mezon LLM Portal.
 #
 # `schema` selects the default workflow. `context` is injected into every
 # artifact's instructions. `rules` are additive per artifact and shared across
 # schemas that use the same artifact id.
 #
-# Keep this file as routing and project policy. Link or name the document that
-# owns a rule rather than duplicating long-form guidance here.
-#
-# Use folded block scalars (`- >-`) for rules. Plain scalars containing `: ` can
+# Keep this file as routing and project policy. Long-form facts live in docs/.
+# Use folded block scalars (`- >-`) for rules; plain scalars containing `: `
 # parse unexpectedly in YAML.
 
 schema: cross-cutting
 
 context: |
-  This is a template OpenSpec configuration for your project. Replace this
-  context with the product, architecture, and workflow facts that every change
-  proposal needs.
+  Project: Mezon LLM Portal — frontend-only Next.js 16 (App Router) customer
+  portal for the mezon-llm (new-api, Go) LLM gateway. Package manager: bun.
+  UI copy: Vietnamese. No Go code, migrations, or relay logic in this repo;
+  the backend lives in ~/src/mezon-llm.
 
   Route to the owner rather than re-deriving:
-  - Product requirements: cite requirement identifiers from your product
-    requirements document. Do not invent requirement IDs in a change.
-  - Scope: cite the document that freezes what is in and out of scope.
-  - Open questions: name unresolved questions that block or shape the change.
-  - Decisions: hard-to-reverse technical choices belong in decision records.
-  - Engineering rules: cite your conventions, security model, state model,
-    testing strategy, and package/workspace boundaries.
-  - Build procedure: cite the command or workflow that proves a change is ready.
+  - Product requirements: cite FR- identifiers from docs/product/prd.md.
+    Do not invent requirement IDs in a change.
+  - Scope: docs/product/prd.md ("Out of scope") freezes what is out; release
+    phases and Phase-2 candidates live there and in docs/product/open-questions.md.
+  - Open questions: docs/product/open-questions.md (OQ1..OQn). Name every
+    question that gates a change; OQ1 (no test suite) and OQ4 (state hardening)
+    currently shape most changes.
+  - Decisions: docs/adr/ holds numbered records; ADR-0001 fixed the
+    OAuth + pure-proxy architecture.
+  - Engineering rules: docs/engineering/architecture.md (topology, invariants),
+    docs/engineering/authentication.md (session model), docs/engineering/backend-api.md
+    (new-api surface), docs/engineering/testing.md (validation modes).
+  - Build procedure: `bun run validate` (typecheck + eslint) is the ready check;
+    `bun run build` for build-sensitive changes. There is no test suite yet.
 
-  Define the constraints that shape most specifications in this project: route
-  prefixes, package boundaries, data ownership, session/authentication topology,
-  design-system rules, or other invariants reviewers must apply.
+  Constraints that shape most specifications:
+  - All new-api traffic flows Server Component / API route → src/lib/api.ts →
+    NEW_API_BASE_URL. Client Components never import api.ts and never call
+    new-api directly; mutations go through /api/portal/*.
+  - Auth: Mezon OAuth 2.0 → jose HS256 JWT in httpOnly `session` cookie
+    (userId, Mezon OAuth accessToken, username, mezonUserId). Middleware gates
+    /dashboard /tokens /logs /vouchers on cookie presence; layouts/pages
+    verify signatures via getSession().
+  - Secrets (NEW_API_ADMIN_TOKEN, MEZON_CLIENT_SECRET, JWT_SECRET) stay in
+    server env; the admin token is used only by the OAuth callback user-sync path.
+  - Single app workspace (src/); no component-library or contract packages yet,
+    so ui/fe/be/integration splits collapse into cross-cutting unless one layer
+    is genuinely isolated.
+  - Quota semantics: 500,000 quota = $1; display goes through src/lib/quota.ts.
+  - UI: shadcn/ui v5 (base-ui) + Tailwind v4; Button has no `asChild` — use
+    buttonVariants() with Link. Icons: lucide-react.
 
   Do not describe work as done without naming the validation that ran. If a
   check could not run, state which check and why.
