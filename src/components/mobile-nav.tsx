@@ -1,16 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  KeyRound,
-  Tags,
-  ScrollText,
-  Ticket,
-  Menu,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -18,19 +7,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/tokens", label: "API Keys", icon: KeyRound },
-  { href: "/models", label: "Bảng giá Model", icon: Tags },
-  { href: "/logs", label: "Lịch sử sử dụng", icon: ScrollText },
-  { href: "/vouchers", label: "Lịch sử Voucher", icon: Ticket },
-];
+import { Button } from "@/components/ui/button";
+import { PortalNavList } from "@/components/portal-nav";
+import { Menu } from "lucide-react";
 
 export function MobileNav() {
-  const pathname = usePathname();
-
   return (
     <Sheet>
       <SheetTrigger
@@ -39,43 +20,23 @@ export function MobileNav() {
         <Menu className="h-5 w-5" />
         <span className="sr-only">Mở menu</span>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
+      <SheetContent side="left" className="w-72 gap-0 p-0">
+        <SheetHeader className="border-b border-[var(--bd)] px-4 py-3">
+          <SheetTitle className="flex items-center gap-2 text-[14.5px] font-bold">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/mezon-logo-icon.svg"
               alt="Mezon LLM"
-              className="h-6 w-6"
+              className="h-[22px] w-[22px]"
             />
             Mezon LLM
           </SheetTitle>
         </SheetHeader>
-        <nav className="flex flex-col gap-1 px-4">
-          {navItems.map((item) => {
-            const active =
-              pathname === item.href || pathname.startsWith(item.href + "/");
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                  active
-                    ? "bg-[var(--surf2)] font-medium text-[var(--tx)]"
-                    : "text-[var(--mut)] hover:bg-[var(--surf2)] hover:text-[var(--tx)]",
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <PortalNavList />
         <div className="mt-auto border-t border-[var(--bd)] p-4">
           <a
             href="/api/auth/logout"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--mut)] transition-colors hover:bg-[var(--surf2)] hover:text-[var(--tx)]"
+            className="flex items-center gap-3 rounded-[var(--rs)] px-3 py-2 text-sm text-[var(--mut)] transition-colors hover:bg-[var(--surf2)] hover:text-[var(--tx)]"
           >
             Đăng xuất
           </a>

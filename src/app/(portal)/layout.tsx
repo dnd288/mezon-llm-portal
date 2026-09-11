@@ -1,30 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import {
-  LayoutDashboard,
-  KeyRound,
-  Tags,
-  ScrollText,
-  Ticket,
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { MobileNav } from "@/components/mobile-nav";
+import { PortalNavList } from "@/components/portal-nav";
+import Image from "next/image";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/tokens", label: "API Keys", icon: KeyRound },
-  { href: "/models", label: "Bảng giá Model", icon: Tags },
-  { href: "/logs", label: "Lịch sử sử dụng", icon: ScrollText },
-  { href: "/vouchers", label: "Lịch sử Voucher", icon: Ticket },
-];
+import type { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Portal",
 };
+
 
 export default async function PortalLayout({
   children,
@@ -41,28 +31,18 @@ export default async function PortalLayout({
       {/* Desktop sidebar */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-[var(--bd)] bg-[var(--surf)]/30 md:flex">
         <div className="flex h-14 items-center gap-2 border-b border-[var(--bd)] px-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <Link href="/dashboard" className="flex items-center gap-2.5">
+            <Image
               src="/mezon-logo-icon.svg"
               alt="Mezon LLM"
-              className="h-6 w-6"
+              width={22}
+              height={22}
+              className="h-[22px] w-[22px]"
             />
-            <span className="font-semibold">Mezon LLM</span>
+            <span className="text-[14.5px] font-bold">Mezon LLM</span>
           </Link>
         </div>
-        <nav className="flex-1 space-y-1 p-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--mut)] transition-colors hover:bg-[var(--surf2)] hover:text-[var(--tx)]"
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <PortalNavList />
         <Separator />
         <div className="p-3">
           <p className="truncate px-2 text-sm font-medium">
@@ -74,7 +54,6 @@ export default async function PortalLayout({
         </div>
       </aside>
 
-      {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Header */}
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b border-[var(--bd)] bg-[var(--bg)]/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-[var(--bg)]/60">

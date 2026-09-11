@@ -35,7 +35,7 @@ Mezon LLM Portal is the customer portal for [Mezon LLM](https://llm.mrdnd.dev), 
 ### FR-2 Landing & discovery (public)
 
 - **FR-2.1** The landing page SHALL present the product value proposition, a quick-start code snippet, and the list of compatible tools, with a distinct CTA depending on session presence (login vs dashboard).
-- **FR-2.2** The pricing page SHALL list all gateway models grouped by provider, with per-million-token price in both quota and USD, searchable by name, and public (no login).
+- **FR-2.2** The pricing page SHALL list all gateway models grouped by provider, with per-million-token price in mzđ (Mezon Đồng), searchable by name, health status visible, and public (no login).
 
 ### FR-3 Dashboard (authenticated)
 

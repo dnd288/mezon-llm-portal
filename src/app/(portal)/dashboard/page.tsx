@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { getSelf } from "@/lib/api";
-import { formatQuota, quotaToDollars } from "@/lib/quota";
+import { formatQuota } from "@/lib/quota";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -10,13 +10,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { VoucherDialog } from "@/components/voucher-dialog";
 import { cn } from "@/lib/utils";
 import {
-  Wallet,
-  Activity,
-  BarChart3,
-  Brain,
   KeyRound,
-  ScrollText,
   ArrowRight,
+  TriangleAlert,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -86,161 +82,113 @@ export default async function DashboardPage() {
     user = null;
   }
 
-  const quota = user?.quota ?? 0;
-  const usedQuota = user?.used_quota ?? 0;
-  const requestCount = user?.request_count ?? 0;
+  const quota = user?.quota;
+  const usedQuota = user?.used_quota;
+  const requestCount = user?.request_count;
 
   return (
-    <div className="space-y-8">
-      {/* Welcome & Voucher */}
+    <div className="space-y-[22px] p-4 md:p-6">
+      {!user && (
+        <div className="flex gap-2.5 rounded-[var(--rs)] border border-[color-mix(in_oklab,var(--warn)_32%,transparent)] bg-[color-mix(in_oklab,var(--warn)_12%,transparent)] p-3.5 text-[var(--warn)]">
+          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+          <p className="text-[12.5px] leading-5">
+            Không tải được số liệu từ gateway. Trang vẫn dùng được — thử tải lại sau ít phút.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--tx)]">
+          <h1 className="text-[22px] font-bold tracking-[-0.015em] text-[var(--tx)]">
             Xin chào, {user?.display_name || session.username}!
           </h1>
-          <p className="text-[var(--mut)]">
+          <p className="mt-1 text-[13.5px] text-[var(--mut)]">
             Tổng quan tài khoản và thống kê sử dụng.
           </p>
         </div>
         <VoucherDialog />
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-[var(--mut)]">
-              Số dư
-            </CardTitle>
-            <Wallet className="h-4 w-4 text-[var(--mut)]" />
+      <div className="grid gap-3.5 lg:grid-cols-[1.4fr_1fr_1fr]">
+        <section className="overflow-hidden rounded-[var(--r)] bg-brand-gradient p-5 text-white shadow-brand-glow">
+          <p className="text-xs font-semibold tracking-[0.08em] uppercase opacity-85">Số dư khả dụng</p>
+          <p className="mt-2 text-[38px] leading-none font-extrabold tracking-[-0.03em]">
+            {quota === undefined ? "—" : formatQuota(quota)}
+          </p>
+          <p className="mt-1 font-mono text-[13px] opacity-90">mzđ · Mezon Đồng</p>
+          {quota !== undefined && (
+            <>
+              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/30">
+                <div className="h-full w-[72%] rounded-full bg-white" />
+              </div>
+              <p className="mt-2 text-[11.5px] opacity-90">Đã dùng 28% hạn mức tháng này</p>
+            </>
+          )}
+        </section>
+
+        <Card className="bg-[var(--surf2)] shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-semibold tracking-[0.08em] uppercase text-[var(--mut)]">Đã sử dụng</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatQuota(quota)}</div>
-            <p className="text-xs text-[var(--mut)]">
-              ≈ {quotaToDollars(quota)}
-            </p>
+            <p className="text-[30px] leading-none font-bold tracking-[-0.02em]">{usedQuota === undefined ? "—" : formatQuota(usedQuota)}</p>
+            <p className="mt-2 font-mono text-[12.5px] text-[var(--mut)]">mzđ</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-[var(--mut)]">
-              Đã sử dụng
-            </CardTitle>
-            <Activity className="h-4 w-4 text-[var(--mut)]" />
+        <Card className="bg-[var(--surf2)] shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-semibold tracking-[0.08em] uppercase text-[var(--mut)]">Tổng request</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatQuota(usedQuota)}</div>
-            <p className="text-xs text-[var(--mut)]">
-              ≈ {quotaToDollars(usedQuota)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-[var(--mut)]">
-              Tổng request
-            </CardTitle>
-            <BarChart3 className="h-4 w-4 text-[var(--mut)]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {requestCount.toLocaleString()}
-            </div>
-            <p className="text-xs text-[var(--mut)]">lượt gọi API</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-[var(--mut)]">
-              Nhóm
-            </CardTitle>
-            <Brain className="h-4 w-4 text-[var(--mut)]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              <Badge variant="secondary">{user?.group || "default"}</Badge>
-            </div>
-            <p className="text-xs text-[var(--mut)]">user group</p>
+            <p className="text-[30px] leading-none font-bold tracking-[-0.02em]">{requestCount === undefined ? "—" : requestCount.toLocaleString()}</p>
+            <p className="mt-2 text-[12.5px] text-[var(--mut)]">lượt gọi API · nhóm <Badge variant="secondary">{user?.group || "default"}</Badge></p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Links */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardContent className="flex items-center justify-between p-6">
-            <div className="flex items-center gap-3">
-              <KeyRound className="h-5 w-5 text-[var(--acc)]" />
-              <div>
-                <p className="font-medium">Quản lý API Key</p>
-                <p className="text-sm text-[var(--mut)]">
-                  Tạo, xem và thu hồi API key
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/tokens"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "icon" }),
-              )}
-            >
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="flex items-center justify-between p-6">
-            <div className="flex items-center gap-3">
-              <ScrollText className="h-5 w-5 text-[var(--acc)]" />
-              <div>
-                <p className="font-medium">Lịch sử sử dụng</p>
-                <p className="text-sm text-[var(--mut)]">
-                  Xem chi tiết request và token usage
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/logs"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "icon" }),
-              )}
-            >
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Setup Guide */}
       <Card>
         <CardHeader>
           <CardTitle>Hướng dẫn cài đặt</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="Claude Code">
-            <TabsList className="flex-wrap h-auto gap-1">
-              {setupGuides.map((g) => (
-                <TabsTrigger key={g.tool} value={g.tool} className="text-xs">
-                  {g.tool}
-                </TabsTrigger>
+            <TabsList className="h-auto flex-wrap gap-1">
+              {setupGuides.map((guide) => (
+                <TabsTrigger key={guide.tool} value={guide.tool} className="text-xs">{guide.tool}</TabsTrigger>
               ))}
             </TabsList>
-            {setupGuides.map((g) => (
-              <TabsContent key={g.tool} value={g.tool}>
-                <div className="rounded-lg bg-[var(--code)] p-4 text-[var(--codeTx)]">
-                  <pre className="text-sm leading-relaxed overflow-x-auto whitespace-pre-wrap">
-                    <code>{g.code}</code>
-                  </pre>
+            {setupGuides.map((guide) => (
+              <TabsContent key={guide.tool} value={guide.tool}>
+                <div className="mt-3 rounded-[var(--rs)] border border-white/7 bg-[var(--code)] p-5 text-[var(--codeTx)]">
+                  <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-[12.5px] leading-[1.85]"><code>{guide.code}</code></pre>
                 </div>
               </TabsContent>
             ))}
           </Tabs>
         </CardContent>
       </Card>
+
+      <div className="grid gap-3.5 sm:grid-cols-2">
+        <Card className="shadow-none">
+          <CardContent className="flex items-center justify-between p-[18px]">
+            <div>
+              <p className="font-semibold">Quản lý API Key</p>
+              <p className="mt-1 text-[12.5px] text-[var(--mut)]">Tạo, xem và thu hồi API key</p>
+            </div>
+            <Link href="/tokens" className={cn(buttonVariants({ variant: "ghost", size: "icon" }))} aria-label="Mở API Keys"><KeyRound className="h-5 w-5 text-[var(--acc)]" /></Link>
+          </CardContent>
+        </Card>
+        <Card className="shadow-none">
+          <CardContent className="flex items-center justify-between p-[18px]">
+            <div>
+              <p className="font-semibold">Lịch sử sử dụng</p>
+              <p className="mt-1 text-[12.5px] text-[var(--mut)]">Chi tiết request và token usage</p>
+            </div>
+            <Link href="/logs" className={cn(buttonVariants({ variant: "ghost", size: "icon" }))} aria-label="Mở lịch sử sử dụng"><ArrowRight className="h-5 w-5 text-[var(--acc)]" /></Link>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

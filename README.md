@@ -25,7 +25,7 @@
 | **Xác thực Mezon OAuth 2.0** | Đăng nhập bằng tài khoản Mezon, tự đồng bộ user với backend |
 | **Dashboard** | Số dư quota, thống kê sử dụng, nhập voucher, hướng dẫn cài đặt cho Claude Code / OpenCode / OMP / Cursor / Hermes |
 | **Quản lý API Key** | Tạo / xem / thu hồi API key (`sk-...`), hiển thị key một lần duy nhất với nút Copy |
-| **Bảng giá Model** | Danh sách 100+ model AI với giá theo quota, trạng thái, provider |
+| **Bảng giá Model** | Tìm kiếm model theo tên, trạng thái sức khỏe (Ổn định / Chập chờn / Lỗi), giá mzđ / 1M token, nhóm truy cập |
 | **Lịch sử sử dụng** | Bảng log chi tiết: model, token in/out, quota, thời gian |
 | **Lịch sử Voucher** | Lịch sử nạp voucher / redemption code |
 

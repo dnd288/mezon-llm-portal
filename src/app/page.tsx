@@ -12,18 +12,37 @@ const ecosystem = [
     name: "Mezon",
     url: "https://mezon.ai",
     domain: "mezon.ai",
+    logo: "/mezon-brand.svg",
+    logoAlt: "Mezon Logo",
+    logoWidth: 84,
+    logoHeight: 25,
+    showName: false,
+    logoClass: "h-6 w-auto object-contain",
     desc: "Nền tảng gốc — đăng nhập OAuth và tài khoản dùng chung cho toàn hệ sinh thái.",
   },
   {
     name: "Mezon Đồng",
     url: "https://dong.mezon.ai",
     domain: "dong.mezon.ai",
+    logo: "/mezon-dong-logo.webp",
+    logoAlt: "Mezon Đồng Logo",
+    logoWidth: 26,
+    logoHeight: 26,
+    showName: true,
+    logoClass: "h-6.5 w-6.5 rounded-md object-contain",
     desc: "Đơn vị mzđ dùng chung — xem các dịch vụ khác cùng chấp nhận Mezon Đồng.",
   },
   {
     name: "CoBar",
     url: "https://cobar.vn",
     domain: "cobar.vn",
+    logo: "/cobar-logo.png",
+    logoAlt: "CoBar Logo",
+    logoWidth: 64,
+    logoHeight: 27,
+    showName: false,
+    logoWrapperClass: "bg-white rounded-md px-2 py-0.5 flex items-center shadow-xs",
+    logoClass: "h-5 w-auto object-contain",
     desc: "Mua voucher nạp mzđ, nhập mã ngay trong Dashboard để cộng quota.",
   },
 ];
@@ -147,35 +166,26 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Quick Start Code */}
-          <div className="relative max-w-[660px] mx-auto mt-9 text-left bg-[var(--code)] border border-[rgba(255,255,255,0.08)] rounded-[var(--r)] overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[rgba(255,255,255,0.07)]">
-              <div className="flex gap-[6px]">
-                <span className="w-[9px] h-[9px] rounded-full bg-[#FF5F57]" />
-                <span className="w-[9px] h-[9px] rounded-full bg-[#FEBC2E]" />
-                <span className="w-[9px] h-[9px] rounded-full bg-[#28C840]" />
+          <div className="relative mx-auto mt-9 max-w-[660px] overflow-hidden rounded-[var(--r)] border border-white/8 bg-[var(--code)] text-left">
+            <div className="flex items-center gap-2 border-b border-white/7 px-4 py-2.5">
+              <div className="flex gap-1.5">
+                <span className="size-[9px] rounded-full bg-[#FF5F57]" />
+                <span className="size-[9px] rounded-full bg-[#FEBC2E]" />
+                <span className="size-[9px] rounded-full bg-[#28C840]" />
               </div>
-              <span className="font-mono text-[11px] font-medium text-[#8E86A8] ml-1.5">
-                Quick start
-              </span>
+              <span className="ml-1.5 font-mono text-[11px] font-medium text-[#8E86A8]">Quick start</span>
             </div>
-            <pre className="m-0 px-5 py-[18px] font-mono text-[12.5px] leading-[1.85] text-[var(--codeTx)] overflow-x-auto">
-              {`export OPENAI_API_KEY="sk-your-key-here"
+            <pre className="m-0 overflow-x-auto px-5 py-[18px] font-mono text-[12.5px] leading-[1.85] text-[var(--codeTx)]">{`export OPENAI_API_KEY="sk-your-key-here"
 export OPENAI_BASE_URL="https://llm.mrdnd.dev/v1"
 
 curl $OPENAI_BASE_URL/chat/completions \\
   -H "Authorization: Bearer $OPENAI_API_KEY" \\
-  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"Hello!"}]}'`}
-            </pre>
+  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"Hello!"}]}'`}</pre>
           </div>
 
-          {/* Compatible tools */}
-          <div className="relative flex flex-wrap gap-2.5 justify-center mt-8">
+          <div className="relative mt-8 flex flex-wrap justify-center gap-2.5">
             {tools.map((tool) => (
-              <span
-                key={tool}
-                className="font-mono text-[12.5px] font-medium text-[var(--mut)] border border-[var(--bd)] rounded-full px-4 py-[7px]"
-              >
+              <span key={tool} className="rounded-full border border-[var(--bd)] px-4 py-[7px] font-mono text-[12.5px] font-medium text-[var(--mut)]">
                 {tool}
               </span>
             ))}
@@ -195,11 +205,36 @@ curl $OPENAI_BASE_URL/chat/completions \\
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex flex-col gap-1.5 border border-[var(--bd)] rounded-[var(--r)] p-[18px] bg-[var(--surf2)] text-inherit hover:border-[var(--g2)] transition-colors"
+                  className="group flex flex-col gap-2 border border-[var(--bd)] rounded-[var(--r)] p-[18px] bg-[var(--surf2)] text-inherit hover:border-[var(--g2)] hover:bg-[color-mix(in_oklab,var(--surf2)_88%,var(--g2))] transition-all duration-200"
                 >
-                  <div className="flex items-center justify-between gap-2.5">
-                    <span className="text-[14.5px] font-bold">{item.name}</span>
-                    <span className="font-mono text-[11.5px] font-medium text-[var(--acc)]">
+                  <div className="flex items-center justify-between gap-2.5 h-8">
+                    <div className="flex items-center gap-2.5">
+                      {item.logoWrapperClass ? (
+                        <div className={item.logoWrapperClass}>
+                          <Image
+                            src={item.logo}
+                            alt={item.logoAlt}
+                            width={item.logoWidth}
+                            height={item.logoHeight}
+                            className={item.logoClass}
+                          />
+                        </div>
+                      ) : (
+                        <Image
+                          src={item.logo}
+                          alt={item.logoAlt}
+                          width={item.logoWidth}
+                          height={item.logoHeight}
+                          className={item.logoClass}
+                        />
+                      )}
+                      {item.showName && (
+                        <span className="text-[14.5px] font-bold text-[var(--tx)]">
+                          {item.name}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-mono text-[11.5px] font-medium text-[var(--acc)] group-hover:text-[var(--g1)] transition-colors shrink-0">
                       {item.domain} ↗
                     </span>
                   </div>

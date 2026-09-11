@@ -143,12 +143,12 @@ The landing page carries a mandatory usage advisory warning users that this is a
 ### Pricing card enrichment
 
 Each model pricing card shows:
-- Provider icon badge (letter + provider color)
-- Model ID in monospace
-- Health status badge (Ổn định / Chập chờn / Lỗi)
+- Provider icon badge (letter badge, brand accent)
+- Model ID in monospace, with a copy button
+- Health status badge (Ổn định / Chập chờn / Lỗi), derived from the gateway's live success rate; "Không khả dụng" when the probe reports the model down
 - Input and output price in mzđ / 1M tokens
-- Access group (e.g., "default")
-- 24h uptime sparkline, latency, and TPS
+- Access group (first enabled group, e.g. "default")
+- Measured latency from the health probe. Uptime sparklines and TPS are design candidates only — the backend does not expose them, so the page never fabricates them.
 
 ### Graceful degradation (FR-3.3)
 
