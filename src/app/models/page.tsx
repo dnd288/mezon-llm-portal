@@ -52,11 +52,11 @@ export default async function ModelsPage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <header className="border-b">
+      <header className="border-b border-[var(--bd)]">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Zap className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient">
+              <Zap className="h-5 w-5 text-white" />
             </div>
             <span className="text-xl font-bold">Mezon LLM</span>
           </Link>
@@ -65,7 +65,7 @@ export default async function ModelsPage() {
               href="/models"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "sm" }),
-                "text-muted-foreground hover:text-foreground",
+                "text-[var(--mut)] hover:text-[var(--tx)]",
               )}
             >
               Mô hình
@@ -94,7 +94,7 @@ export default async function ModelsPage() {
         <div className="mb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
+            className="inline-flex items-center gap-1 text-sm text-[var(--mut)] hover:text-[var(--tx)] mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
             Quay lại trang chủ
@@ -102,7 +102,7 @@ export default async function ModelsPage() {
           <h1 className="text-3xl font-bold tracking-tight">
             Bảng giá mô hình
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-[var(--mut)] mt-2">
             Khám phá các mô hình AI và mức giá tương ứng. Giá tính theo quota
             cho 1 triệu token.
           </p>
@@ -112,7 +112,7 @@ export default async function ModelsPage() {
             but for a server component we render a static input that
             can be enhanced later. We use URL search params for filtering. */}
         <div className="relative mb-6 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[var(--mut)]" />
           <Input
             type="search"
             placeholder="Tìm kiếm mô hình..."
@@ -132,7 +132,7 @@ export default async function ModelsPage() {
             return (
               <section key={provider}>
                 <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <span className="text-muted-foreground">{provider}</span>
+                  <span className="text-[var(--mut)]">{provider}</span>
                   <Badge variant="secondary">{models.length}</Badge>
                 </h2>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -170,7 +170,7 @@ export default async function ModelsPage() {
                             </div>
                             <Badge
                               variant={
-                                model.available ? "default" : "destructive"
+                                model.available ? "active" : "revoked"
                               }
                             >
                               {model.available ? "Sẵn sàng" : "Không khả dụng"}
@@ -180,7 +180,7 @@ export default async function ModelsPage() {
                         <CardContent className="pt-0">
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">
+                              <span className="text-[var(--mut)]">
                                 Input (1M tokens)
                               </span>
                               <span className="font-medium">
@@ -188,7 +188,7 @@ export default async function ModelsPage() {
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">
+                              <span className="text-[var(--mut)]">
                                 Output (1M tokens)
                               </span>
                               <span className="font-medium">
@@ -196,18 +196,18 @@ export default async function ModelsPage() {
                               </span>
                             </div>
                             <div className="flex justify-between border-t pt-2 mt-2">
-                              <span className="text-muted-foreground">
+                              <span className="text-[var(--mut)]">
                                 ~ Input
                               </span>
-                              <span className="text-muted-foreground">
+                              <span className="text-[var(--mut)]">
                                 {inputDollars}/M
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">
+                              <span className="text-[var(--mut)]">
                                 ~ Output
                               </span>
-                              <span className="text-muted-foreground">
+                              <span className="text-[var(--mut)]">
                                 {outputDollars}/M
                               </span>
                             </div>
@@ -237,8 +237,8 @@ export default async function ModelsPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t py-6 mt-auto">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+      <footer className="border-t border-[var(--bd)] py-6 mt-auto">
+        <div className="container mx-auto px-4 text-center text-sm text-[var(--mut)]">
           <p>Mezon LLM — Nền tảng AI API cho cộng đồng</p>
         </div>
       </footer>

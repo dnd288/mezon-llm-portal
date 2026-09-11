@@ -1,9 +1,3 @@
-URL: https://raw.githubusercontent.com/dnd288/agent-kit/main/cli/kit/openspec/schemas/bugfix/schema.yaml
-Content-Type: text/plain
-Method: text
-
----
-
 name: bugfix
 version: 2
 description: "Bug fix - inspect, debug, flow, fix, verify. For a defect whose cause is not obvious from the symptom."

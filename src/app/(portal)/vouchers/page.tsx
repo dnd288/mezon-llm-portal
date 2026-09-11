@@ -29,12 +29,12 @@ function getStatusVariant(status: string) {
     case "success":
     case "completed":
     case "done":
-      return "default" as const;
+      return "active" as const;
     case "pending":
-      return "secondary" as const;
+      return "expired" as const;
     case "failed":
     case "cancelled":
-      return "destructive" as const;
+      return "revoked" as const;
     default:
       return "outline" as const;
   }
@@ -80,7 +80,7 @@ export default async function VouchersPage() {
             <CreditCard className="h-6 w-6" />
             Lịch sử nạp
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-[var(--mut)] mt-1">
             Xem lịch sử các giao dịch nạp quota vào tài khoản.
           </p>
         </div>
@@ -97,8 +97,8 @@ export default async function VouchersPage() {
         <CardContent>
           {sortedTopUps.length === 0 ? (
             <div className="py-12 text-center">
-              <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
+              <Gift className="h-12 w-12 mx-auto text-[var(--mut)] mb-4" />
+              <p className="text-[var(--mut)]">
                 Chưa có giao dịch nạp nào.
               </p>
             </div>
@@ -117,7 +117,7 @@ export default async function VouchersPage() {
                 {sortedTopUps.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell>
-                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                      <code className="text-xs bg-[var(--surf2)] px-1.5 py-0.5 rounded">
                         {record.trade_no || `#${record.id}`}
                       </code>
                     </TableCell>
@@ -148,7 +148,7 @@ export default async function VouchersPage() {
           href="/dashboard"
           className={cn(
             buttonVariants({ variant: "ghost", size: "sm" }),
-            "gap-1.5 text-muted-foreground",
+            "gap-1.5 text-[var(--mut)]",
           )}
         >
           <ArrowLeft className="h-4 w-4" />

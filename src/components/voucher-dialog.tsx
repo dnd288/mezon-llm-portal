@@ -59,7 +59,7 @@ export function VoucherDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
-        className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-2.5 h-8 text-sm font-medium hover:bg-muted transition-colors"
+        className="inline-flex items-center justify-center gap-2 rounded-[var(--rs)] border border-[var(--bd)] bg-[var(--bg)] px-2.5 h-8 text-sm font-medium hover:bg-[var(--surf2)] transition-colors"
       >
         <Ticket className="h-4 w-4" />
         Nhập Voucher

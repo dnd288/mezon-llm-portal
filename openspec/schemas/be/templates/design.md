@@ -1,9 +1,3 @@
-URL: https://raw.githubusercontent.com/dnd288/agent-kit/main/cli/kit/openspec/schemas/be/templates/design.md
-Content-Type: text/plain
-Method: text
-
----
-
 ## Context
 
 <!-- Background and current state -->

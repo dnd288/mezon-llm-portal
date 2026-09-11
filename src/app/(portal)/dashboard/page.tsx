@@ -95,10 +95,10 @@ export default async function DashboardPage() {
       {/* Welcome & Voucher */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-2xl font-bold text-[var(--tx)]">
             Xin chào, {user?.display_name || session.username}!
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-[var(--mut)]">
             Tổng quan tài khoản và thống kê sử dụng.
           </p>
         </div>
@@ -109,14 +109,14 @@ export default async function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-[var(--mut)]">
               Số dư
             </CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+            <Wallet className="h-4 w-4 text-[var(--mut)]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatQuota(quota)}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-[var(--mut)]">
               ≈ {quotaToDollars(quota)}
             </p>
           </CardContent>
@@ -124,14 +124,14 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-[var(--mut)]">
               Đã sử dụng
             </CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <Activity className="h-4 w-4 text-[var(--mut)]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatQuota(usedQuota)}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-[var(--mut)]">
               ≈ {quotaToDollars(usedQuota)}
             </p>
           </CardContent>
@@ -139,31 +139,31 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-[var(--mut)]">
               Tổng request
             </CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <BarChart3 className="h-4 w-4 text-[var(--mut)]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {requestCount.toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">lượt gọi API</p>
+            <p className="text-xs text-[var(--mut)]">lượt gọi API</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-[var(--mut)]">
               Nhóm
             </CardTitle>
-            <Brain className="h-4 w-4 text-muted-foreground" />
+            <Brain className="h-4 w-4 text-[var(--mut)]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               <Badge variant="secondary">{user?.group || "default"}</Badge>
             </div>
-            <p className="text-xs text-muted-foreground">user group</p>
+            <p className="text-xs text-[var(--mut)]">user group</p>
           </CardContent>
         </Card>
       </div>
@@ -173,10 +173,10 @@ export default async function DashboardPage() {
         <Card>
           <CardContent className="flex items-center justify-between p-6">
             <div className="flex items-center gap-3">
-              <KeyRound className="h-5 w-5 text-primary" />
+              <KeyRound className="h-5 w-5 text-[var(--acc)]" />
               <div>
                 <p className="font-medium">Quản lý API Key</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[var(--mut)]">
                   Tạo, xem và thu hồi API key
                 </p>
               </div>
@@ -195,10 +195,10 @@ export default async function DashboardPage() {
         <Card>
           <CardContent className="flex items-center justify-between p-6">
             <div className="flex items-center gap-3">
-              <ScrollText className="h-5 w-5 text-primary" />
+              <ScrollText className="h-5 w-5 text-[var(--acc)]" />
               <div>
                 <p className="font-medium">Lịch sử sử dụng</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-[var(--mut)]">
                   Xem chi tiết request và token usage
                 </p>
               </div>
@@ -231,7 +231,7 @@ export default async function DashboardPage() {
             </TabsList>
             {setupGuides.map((g) => (
               <TabsContent key={g.tool} value={g.tool}>
-                <div className="rounded-lg bg-zinc-950 p-4 text-zinc-50">
+                <div className="rounded-lg bg-[var(--code)] p-4 text-[var(--codeTx)]">
                   <pre className="text-sm leading-relaxed overflow-x-auto whitespace-pre-wrap">
                     <code>{g.code}</code>
                   </pre>

@@ -62,8 +62,8 @@ export function MobileNav() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                   active
-                    ? "bg-muted font-medium text-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "bg-[var(--surf2)] font-medium text-[var(--tx)]"
+                    : "text-[var(--mut)] hover:bg-[var(--surf2)] hover:text-[var(--tx)]",
                 )}
               >
                 <item.icon className="h-4 w-4" />
@@ -72,10 +72,10 @@ export function MobileNav() {
             );
           })}
         </nav>
-        <div className="mt-auto border-t p-4">
+        <div className="mt-auto border-t border-[var(--bd)] p-4">
           <a
             href="/api/auth/logout"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--mut)] transition-colors hover:bg-[var(--surf2)] hover:text-[var(--tx)]"
           >
             Đăng xuất
           </a>
