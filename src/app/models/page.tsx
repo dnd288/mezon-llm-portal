@@ -1,245 +1,200 @@
-import { getPricing } from "@/lib/api";
 import { getSession } from "@/lib/auth";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+  getModelStatus,
+  getPerformanceMetrics,
+  getPricing,
+  type ModelStatus,
+  type PerformanceMetric,
+} from "@/lib/api";
 import { buttonVariants } from "@/components/ui/button";
+import { ModelPricingGrid, type ModelPricingItem } from "@/components/model-pricing-grid";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Search, Zap } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Bảng giá Model",
+};
+
+const PROVIDERS: Record<
+  number,
+  { name: string; logoSrc: string; logoClassName?: string }
+> = {
+  1: { name: "MiniMax", logoSrc: "/minimax-color.png" },
+  2: { name: "Kimi", logoSrc: "/kimi-logo-png-svg.webp" },
+  3: { name: "DeepSeek", logoSrc: "/DeepSeek-icon.svg.webp" },
+  4: { name: "OpenAI", logoSrc: "/openai.png" },
+  5: { name: "Google Gemini", logoSrc: "/Google_Gemini_icon_2025.svg.webp" },
+  6: { name: "Zhipu AI", logoSrc: "/zhipu-color.png", logoClassName: "bg-white p-1.5" },
+  7: { name: "xAI", logoSrc: "/xai-logo-png_seeklogo-491313.png", logoClassName: "bg-white p-1.5" },
+  8: { name: "Anthropic", logoSrc: "/anthropic.png" },
+};
+
+const UNKNOWN_PROVIDER: { name: string; logoSrc: undefined; logoClassName?: string } = {
+  name: "Khác",
+  logoSrc: undefined,
+};
+
+function providerFor(model: {
+  owner_by: string;
+  vendor_id: number;
+}): { name: string; logoSrc?: string; logoClassName?: string } {
+  const owner = model.owner_by.trim();
+  return owner
+    ? { name: owner }
+    : (PROVIDERS[model.vendor_id] ?? UNKNOWN_PROVIDER);
+}
 
 const QUOTA_PER_MILLION_TOKENS = 500_000;
 
-function quotaPerMillionTokens(ratio: number): string {
-  if (!ratio || ratio <= 0) return "—";
-  const quota = ratio * QUOTA_PER_MILLION_TOKENS;
+function mzndPerMillionTokens(model: {
+  quota_type: number;
+  model_ratio: number;
+  model_price: number;
+}): string {
+  const quota =
+    model.quota_type === 1
+      ? model.model_price * QUOTA_PER_MILLION_TOKENS
+      : model.model_ratio * QUOTA_PER_MILLION_TOKENS;
+
+  if (!Number.isFinite(quota) || quota <= 0) return "—";
   if (quota >= 1_000_000) return `${(quota / 1_000_000).toFixed(2)}M`;
   if (quota >= 1_000) return `${(quota / 1_000).toFixed(1)}K`;
-  return quota.toLocaleString();
-}
-
-function dollarsPerMillionTokens(ratio: number): string {
-  if (!ratio || ratio <= 0) return "—";
-  const quota = ratio * QUOTA_PER_MILLION_TOKENS;
-  const dollars = quota / 500_000;
-  return `$${dollars.toFixed(2)}`;
+  return quota.toLocaleString("vi-VN");
 }
 
 export default async function ModelsPage() {
-  const [pricing, session] = await Promise.all([getPricing(), getSession()]);
-
-  // Group models by owned_by
-  const grouped: Record<string, typeof pricing> = {};
-  for (const model of pricing) {
-    const provider = model.owned_by || "Khác";
-    if (!grouped[provider]) {
-      grouped[provider] = [];
-    }
-    grouped[provider].push(model);
-  }
-
-  // Sort providers alphabetically
-  const sortedProviders = Object.keys(grouped).sort((a, b) =>
-    a.localeCompare(b),
+  const [pricing, session, statuses, metrics] = await Promise.all([
+    getPricing(),
+    getSession(),
+    getModelStatus().catch(() => [] as ModelStatus[]),
+    getPerformanceMetrics().catch(() => [] as PerformanceMetric[]),
+  ]);
+  const metricsByModel = metrics.reduce<Record<string, PerformanceMetric>>(
+    (result, metric) => {
+      result[metric.model_name] = metric;
+      return result;
+    },
+    {},
   );
 
+  const statusByModel = statuses.reduce<Record<string, ModelStatus>>(
+    (result, status) => {
+      result[status.name] = status;
+      return result;
+    },
+    {},
+  );
+  const items: ModelPricingItem[] = pricing
+    .map((model) => {
+      const status = statusByModel[model.model_name];
+      const metric = metricsByModel[model.model_name];
+      const provider = providerFor(model);
+      const successRate = metric?.success_rate ?? status?.success_rate ?? null;
+      const alive = status?.probe.alive ?? true;
+      // Health from live traffic: ≥90% success = stable, ≥50% =
+      // degraded, below that (or a failed probe) = error. No traffic
+      // yet means the probe result alone decides.
+      const health: ModelPricingItem["status"] =
+        successRate === null
+          ? (alive ? undefined : "error")
+          : successRate >= 90
+            ? "stable"
+            : successRate >= 50
+              ? "degraded"
+              : "error";
+      return {
+        name: model.model_name,
+        provider: provider.name,
+        providerLogoClassName: provider.logoClassName,
+        providerLogoSrc: provider.logoSrc,
+        inputPrice: mzndPerMillionTokens(model),
+        priceUnit:
+          (model.quota_type === 1
+            ? "per-request"
+            : "per-million-tokens") as ModelPricingItem["priceUnit"],
+        outputPrice:
+          model.quota_type === 1
+            ? "—"
+            : mzndPerMillionTokens({
+                ...model,
+                model_ratio: model.model_ratio * model.completion_ratio,
+              }),
+        available: status ? status.probe.alive : true,
+        group: model.enable_groups?.[0] || "default",
+        status: health,
+        latency: metric?.avg_latency_ms
+          ? metric.avg_latency_ms / 1000
+          : status?.avg_latency_ms
+            ? status.avg_latency_ms / 1000
+            : status?.probe.latency_ms
+              ? status.probe.latency_ms / 1000
+              : undefined,
+        tokensPerSecond: metric?.avg_tps,
+      };
+    })
+    .sort((left, right) => left.name.localeCompare(right.name));
+
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <header className="border-b border-[var(--bd)]">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient">
-              <Zap className="h-5 w-5 text-white" />
+    <div className="flex min-h-screen flex-col bg-[var(--bg)]">
+      <header className="sticky top-0 z-40 border-b border-[var(--bd)] bg-[var(--bg)]/95 backdrop-blur">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image
+              src="/mezon-logo-icon.svg"
+              alt="Mezon LLM"
+              width={30}
+              height={30}
+              className="h-[30px] w-[30px]"
+            />
+            <div className="flex flex-col">
+              <span className="text-[15px] leading-none font-extrabold tracking-tight">
+                MEZON LLM
+              </span>
+              <span className="mt-0.5 text-[8.5px] leading-none font-semibold tracking-[0.3em] text-[var(--acc)]">
+                API GATEWAY
+              </span>
             </div>
-            <span className="text-xl font-bold">Mezon LLM</span>
           </Link>
           <nav className="flex items-center gap-4">
             <Link
               href="/models"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "sm" }),
-                "text-[var(--mut)] hover:text-[var(--tx)]",
-              )}
+              className="text-[13px] text-[var(--mut)] transition-colors hover:text-[var(--tx)]"
             >
-              Mô hình
+              Bảng giá
             </Link>
-            {session ? (
-              <Link
-                href="/dashboard"
-                className={cn(buttonVariants({ size: "sm" }))}
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className={cn(buttonVariants({ size: "sm" }))}
-              >
-                Đăng nhập
-              </Link>
-            )}
+            <Link
+              href={session ? "/dashboard" : "/login"}
+              className={cn(buttonVariants({ size: "sm" }))}
+            >
+              {session ? "Dashboard" : "Đăng nhập"}
+            </Link>
           </nav>
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1 text-sm text-[var(--mut)] hover:text-[var(--tx)] mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Quay lại trang chủ
-          </Link>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Bảng giá mô hình
-          </h1>
-          <p className="text-[var(--mut)] mt-2">
-            Khám phá các mô hình AI và mức giá tương ứng. Giá tính theo quota
-            cho 1 triệu token.
-          </p>
-        </div>
-
-        {/* Search - client-side filtering would need a client component,
-            but for a server component we render a static input that
-            can be enhanced later. We use URL search params for filtering. */}
-        <div className="relative mb-6 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[var(--mut)]" />
-          <Input
-            type="search"
-            placeholder="Tìm kiếm mô hình..."
-            className="pl-8"
-            name="q"
-            // In a real app, wrap in a <form> for server-side filtering
-          />
-        </div>
-
-        {/* Pricing grid grouped by provider */}
-        <div className="space-y-10">
-          {sortedProviders.map((provider) => {
-            const models = grouped[provider];
-            // Sort models by name
-            models.sort((a, b) => a.model_name.localeCompare(b.model_name));
-
-            return (
-              <section key={provider}>
-                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                  <span className="text-[var(--mut)]">{provider}</span>
-                  <Badge variant="secondary">{models.length}</Badge>
-                </h2>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {models.map((model) => {
-                    const inputPrice = quotaPerMillionTokens(
-                      model.model_ratio,
-                    );
-                    const outputPrice = quotaPerMillionTokens(
-                      model.model_ratio * model.completion_ratio,
-                    );
-                    const inputDollars = dollarsPerMillionTokens(
-                      model.model_ratio,
-                    );
-                    const outputDollars = dollarsPerMillionTokens(
-                      model.model_ratio * model.completion_ratio,
-                    );
-
-                    return (
-                      <Card
-                        key={model.model_name}
-                        className={cn(
-                          "transition-shadow hover:shadow-md",
-                          !model.available && "opacity-60",
-                        )}
-                      >
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <CardTitle className="text-base truncate">
-                                {model.model_name}
-                              </CardTitle>
-                              <CardDescription className="truncate">
-                                {model.owned_by}
-                              </CardDescription>
-                            </div>
-                            <Badge
-                              variant={
-                                model.available ? "active" : "revoked"
-                              }
-                            >
-                              {model.available ? "Sẵn sàng" : "Không khả dụng"}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="pt-0">
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-[var(--mut)]">
-                                Input (1M tokens)
-                              </span>
-                              <span className="font-medium">
-                                {inputPrice} quota
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[var(--mut)]">
-                                Output (1M tokens)
-                              </span>
-                              <span className="font-medium">
-                                {outputPrice} quota
-                              </span>
-                            </div>
-                            <div className="flex justify-between border-t pt-2 mt-2">
-                              <span className="text-[var(--mut)]">
-                                ~ Input
-                              </span>
-                              <span className="text-[var(--mut)]">
-                                {inputDollars}/M
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[var(--mut)]">
-                                ~ Output
-                              </span>
-                              <span className="text-[var(--mut)]">
-                                {outputDollars}/M
-                              </span>
-                            </div>
-                          </div>
-                          {model.tags && model.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-3">
-                              {model.tags.slice(0, 3).map((tag) => (
-                                <Badge
-                                  key={tag}
-                                  variant="outline"
-                                  className="text-xs"
-                                >
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+        <h1 className="text-[26px] font-bold tracking-[-0.02em]">
+          Bảng giá mô hình
+        </h1>
+        <p className="mt-1.5 text-[13.5px] text-[var(--mut)]">
+          Giá cho 1 triệu token, tính bằng mzđ (Mezon Đồng).
+        </p>
+        <div className="mt-6">
+          <ModelPricingGrid models={items} />
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--bd)] py-6 mt-auto">
-        <div className="container mx-auto px-4 text-center text-sm text-[var(--mut)]">
-          <p>Mezon LLM — Nền tảng AI API cho cộng đồng</p>
+      <footer className="border-t border-[var(--bd)] px-4 py-[18px]">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3.5 text-[12.5px] text-[var(--mut)]">
+          <span>© 2026 Mezon LLM — thành viên hệ sinh thái Mezon.</span>
+          <Link
+            href="/"
+            className="text-[var(--acc)] transition-colors hover:text-[var(--g1)]"
+          >
+            ← Về trang chủ
+          </Link>
         </div>
       </footer>
     </div>

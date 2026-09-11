@@ -262,14 +262,15 @@ export async function getModels(
 
 export interface PricingModel {
   model_name: string;
+  vendor_id: number;
   model_ratio: number;
   model_price: number;
   completion_ratio: number;
-  group_ratio: number;
   quota_type: number;
-  available: boolean;
-  tags: string[];
-  owned_by: string;
+  owner_by: string;
+  enable_groups?: string[];
+  supported_endpoint_types?: string[];
+  pricing_version?: string;
 }
 
 export async function getPricing(): Promise<PricingModel[]> {
@@ -279,18 +280,45 @@ export async function getPricing(): Promise<PricingModel[]> {
   return res.data;
 }
 
+export interface ModelProbe {
+  checked: boolean;
+  alive: boolean;
+  test_time: number;
+  latency_ms: number;
+}
+
 export interface ModelStatus {
-  model_name: string;
-  status: string;
-  latency: number;
-  last_check: number;
+  name: string;
+  request_count: number;
+  success_rate: number | null;
+  avg_latency_ms?: number;
+  probe: ModelProbe;
 }
 
 export async function getModelStatus(): Promise<ModelStatus[]> {
-  const res = await request<{ success: boolean; data: ModelStatus[] }>(
-    "/api/status/models",
-  );
-  return res.data;
+  const res = await request<{
+    success: boolean;
+    data: { models: ModelStatus[] };
+  }>("/api/status/models");
+  return res.data.models;
+}
+
+export interface PerformanceMetric {
+  model_name: string;
+  avg_latency_ms: number;
+  success_rate: number;
+  avg_tps: number;
+}
+
+export async function getPerformanceMetrics(
+  hours = 24,
+): Promise<PerformanceMetric[]> {
+  const res = await request<{
+    data: { models: PerformanceMetric[] };
+  }>(`/api/perf-metrics/summary?hours=${hours}`, {
+    next: { revalidate: 300 },
+  });
+  return res.data.models;
 }
 
 // ──────────────────────────────────────────────
