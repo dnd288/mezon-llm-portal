@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
             id: adopted.id,
             username: adopted.username,
             display_name: adopted.display_name || displayName,
-            password: deriveSyncPassword(mezonUserId),
+            password: await deriveSyncPassword(mezonUserId),
             group: adopted.group,
           },
           { adminToken: NEW_API_ADMIN_TOKEN },
@@ -222,7 +222,7 @@ export async function GET(request: NextRequest) {
           {
             username: createName,
             display_name: displayName,
-            password: deriveSyncPassword(mezonUserId),
+            password: await deriveSyncPassword(mezonUserId),
           },
           { adminToken: NEW_API_ADMIN_TOKEN },
         );
@@ -259,7 +259,7 @@ export async function GET(request: NextRequest) {
     try {
       backendSession = await loginUser(
         backendUsername,
-        deriveSyncPassword(mezonUserId),
+        await deriveSyncPassword(mezonUserId),
       );
     } catch (loginError) {
       console.error("new-api login failed:", loginError);
