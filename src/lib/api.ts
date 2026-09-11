@@ -303,11 +303,17 @@ export async function getModelStatus(): Promise<ModelStatus[]> {
   return res.data.models;
 }
 
+export interface PerformanceMetricPoint {
+  ts: number;
+  success_rate: number;
+}
+
 export interface PerformanceMetric {
   model_name: string;
   avg_latency_ms: number;
   success_rate: number;
   avg_tps: number;
+  recent_success_series?: PerformanceMetricPoint[];
 }
 
 export async function getPerformanceMetrics(

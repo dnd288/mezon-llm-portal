@@ -174,8 +174,8 @@ export OPENAI_API_KEY="sk-your-key-here"</pre>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:18px">
-          <span style="font-size:13px;color:var(--mut)">Bảng giá</span>
-          <span style="font-size:13px;color:var(--mut)">Tài liệu</span>
+          
+          
           <span style="font:600 13px Geist,sans-serif;color:#fff;background:linear-gradient(135deg,var(--g1),var(--g2));border-radius:var(--rs);padding:8px 16px">Đăng nhập</span>
         </div>
       </div>
@@ -200,41 +200,39 @@ export OPENAI_API_KEY="sk-your-key-here"</pre>
           </div>
         </div>
 
-        <div style="position:relative;max-width:660px;margin:36px auto 0;text-align:left;background:var(--code);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);overflow:hidden">
-          <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.07)">
-            <span style="width:9px;height:9px;border-radius:999px;background:#FF5F57"></span><span style="width:9px;height:9px;border-radius:999px;background:#FEBC2E"></span><span style="width:9px;height:9px;border-radius:999px;background:#28C840"></span>
-            <span style="font:500 11px 'Geist Mono',monospace;color:#8E86A8;margin-left:6px">Quick start</span>
-          </div>
-          <pre style="margin:0;padding:18px 20px;font:400 12.5px/1.85 'Geist Mono',monospace;color:var(--codeTx);overflow-x:auto">export OPENAI_API_KEY="sk-your-key-here"
-export OPENAI_BASE_URL="https://llm.mrdnd.dev/v1"
-
-curl $OPENAI_BASE_URL/chat/completions \
-  -H "Authorization: Bearer $OPENAI_API_KEY" \
-  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"Hello!"}]}'</pre>
-        </div>
+        
 
         <div style="position:relative;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:32px">
-          <span style="font:500 12.5px 'Geist Mono',monospace;color:var(--mut);border:1px solid var(--bd);border-radius:999px;padding:7px 16px">Claude Code</span>
-          <span style="font:500 12.5px 'Geist Mono',monospace;color:var(--mut);border:1px solid var(--bd);border-radius:999px;padding:7px 16px">OpenCode</span>
-          <span style="font:500 12.5px 'Geist Mono',monospace;color:var(--mut);border:1px solid var(--bd);border-radius:999px;padding:7px 16px">OMP</span>
-          <span style="font:500 12.5px 'Geist Mono',monospace;color:var(--mut);border:1px solid var(--bd);border-radius:999px;padding:7px 16px">Cursor</span>
-          <span style="font:500 12.5px 'Geist Mono',monospace;color:var(--mut);border:1px solid var(--bd);border-radius:999px;padding:7px 16px">Hermes</span>
+          
+          
+          
+          
+          
         </div>
       </div>
 
       <div style="border-top:1px solid var(--bd);padding:30px 28px">
         <div style="font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);text-align:center">Thuộc hệ sinh thái Mezon</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px">
-          <a href="https://mezon.ai" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:6px;border:1px solid var(--bd);border-radius:var(--r);padding:18px;background:var(--surf2);color:inherit" style-hover="border-color:var(--g2)">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span style="font-size:14.5px;font-weight:700">Mezon</span><span style="font:500 11.5px 'Geist Mono',monospace;color:var(--acc)">mezon.ai ↗</span></div>
+          <a href="https://mezon.ai" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:10px;border:1px solid var(--bd);border-radius:var(--r);padding:18px;background:var(--surf2);color:inherit" style-hover="border-color:var(--g2)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div style="display:flex;align-items:center;gap:9px"><img src="public/mezon-logo-icon.svg" alt="Mezon" style="width:26px;height:26px;flex:none"><span style="font-size:15px;font-weight:700">Mezon</span></div>
+              <span style="font:500 11.5px 'Geist Mono',monospace;color:var(--acc)">↗</span>
+            </div>
             <p style="margin:0;font-size:12.5px;line-height:1.55;color:var(--mut)">Nền tảng gốc — đăng nhập OAuth và tài khoản dùng chung cho toàn hệ sinh thái.</p>
           </a>
-          <a href="https://dong.mezon.ai" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:6px;border:1px solid var(--bd);border-radius:var(--r);padding:18px;background:var(--surf2);color:inherit" style-hover="border-color:var(--g2)">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span style="font-size:14.5px;font-weight:700">Mezon Đồng</span><span style="font:500 11.5px 'Geist Mono',monospace;color:var(--acc)">dong.mezon.ai ↗</span></div>
+          <a href="https://dong.mezon.ai" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:10px;border:1px solid var(--bd);border-radius:var(--r);padding:18px;background:var(--surf2);color:inherit" style-hover="border-color:var(--g2)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;flex:none;border-radius:999px;border:1.5px solid var(--acc);display:flex;align-items:center;justify-content:center;font:800 13px 'Geist Mono',monospace;color:var(--acc)">đ</div><span style="font-size:15px;font-weight:700">Mezon Đồng</span></div>
+              <span style="font:500 11.5px 'Geist Mono',monospace;color:var(--acc)">↗</span>
+            </div>
             <p style="margin:0;font-size:12.5px;line-height:1.55;color:var(--mut)">Đơn vị mzđ dùng chung — xem các dịch vụ khác cùng chấp nhận Mezon Đồng.</p>
           </a>
-          <a href="https://cobar.vn" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:6px;border:1px solid var(--bd);border-radius:var(--r);padding:18px;background:var(--surf2);color:inherit" style-hover="border-color:var(--g2)">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span style="font-size:14.5px;font-weight:700">CoBar</span><span style="font:500 11.5px 'Geist Mono',monospace;color:var(--acc)">cobar.vn ↗</span></div>
+          <a href="https://cobar.vn" target="_blank" rel="noopener" style="display:flex;flex-direction:column;gap:10px;border:1px solid var(--bd);border-radius:var(--r);padding:18px;background:var(--surf2);color:inherit" style-hover="border-color:var(--g2)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div style="display:flex;align-items:center;gap:9px"><div style="width:26px;height:26px;flex:none;border-radius:8px;background:var(--surf);border:1px solid var(--bdS);display:flex;align-items:center;justify-content:center;font:800 11.5px Geist,sans-serif;color:var(--tx)">Co</div><span style="font-size:15px;font-weight:700">CoBar</span></div>
+              <span style="font:500 11.5px 'Geist Mono',monospace;color:var(--acc)">↗</span>
+            </div>
             <p style="margin:0;font-size:12.5px;line-height:1.55;color:var(--mut)">Mua voucher nạp mzđ, nhập mã ngay trong Dashboard để cộng quota.</p>
           </a>
         </div>
@@ -272,18 +270,27 @@ curl $OPENAI_BASE_URL/chat/completions \
           <span style="display:flex;align-items:center;gap:10px;font:500 13px Geist,sans-serif;padding:9px 12px;border-radius:var(--rs);color:var(--mut)"><span style="width:6px;height:6px;border-radius:2px;background:var(--mut)"></span>Lịch sử sử dụng</span>
           <span style="display:flex;align-items:center;gap:10px;font:500 13px Geist,sans-serif;padding:9px 12px;border-radius:var(--rs);color:var(--mut)"><span style="width:6px;height:6px;border-radius:2px;background:var(--mut)"></span>Lịch sử Voucher</span>
         </nav>
-        <div style="border-top:1px solid var(--bd);padding:14px 18px">
-          <div style="font-size:13px;font-weight:600">nguyen.dung</div>
-          <div style="font:400 11.5px 'Geist Mono',monospace;color:var(--mut);margin-top:2px">ID: 10482</div>
+        <div style="border-top:1px solid var(--bd);padding:12px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:9px;padding:2px 6px">
+            <div style="width:30px;height:30px;flex:none;border-radius:999px;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;align-items:center;justify-content:center;color:#fff;font:700 12.5px Geist,sans-serif">D</div>
+            <div style="min-width:0"><div style="font-size:13px;font-weight:600">nguyen.dung</div><div style="font:400 11px 'Geist Mono',monospace;color:var(--mut)">ID: 10482</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="flex:1;display:flex;border:1px solid var(--bdS);border-radius:var(--rs);overflow:hidden">
+              <span style="flex:1;display:flex;align-items:center;justify-content:center;padding:6px 0;cursor:pointer;color:var(--tx);background:var(--surf)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"></path></svg></span>
+              <span style="flex:1;display:flex;align-items:center;justify-content:center;padding:6px 0;cursor:pointer;color:var(--mut);border-left:1px solid var(--bdS)"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"></path></svg></span>
+            </div>
+          </div>
+          <span style="display:flex;align-items:center;gap:8px;font:600 12.5px Geist,sans-serif;padding:8px 10px;border-radius:var(--rs);color:var(--mut);cursor:pointer" style-hover="background:var(--surf2);color:var(--tx)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>Đăng xuất</span>
         </div>
       </aside>
 
       <div style="flex:1;min-width:0;display:flex;flex-direction:column">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:1px solid var(--bd)">
           <span style="font:500 12.5px 'Geist Mono',monospace;color:var(--mut)">/dashboard</span>
-          <div style="display:flex;align-items:center;gap:12px">
-            <span style="font-size:12.5px;color:var(--mut)">nguyen.dung</span>
-            <span style="font:600 12px Geist,sans-serif;border:1px solid var(--bdS);border-radius:var(--rs);padding:6px 12px">Đăng xuất</span>
+          <div style="display:flex;border:1px solid var(--bdS);border-radius:var(--rs);overflow:hidden">
+            <span style="padding:6px 12px;font:700 11px Geist,sans-serif;cursor:pointer;color:var(--tx);background:var(--surf)">VI</span>
+            <span style="padding:6px 12px;font:700 11px Geist,sans-serif;cursor:pointer;color:var(--mut);border-left:1px solid var(--bdS)">EN</span>
           </div>
         </div>
 
@@ -614,14 +621,14 @@ export OPENAI_BASE_URL="https://llm.mrdnd.dev/v1"</pre>
             <span style="flex:none;width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font:700 17px 'Geist Mono',monospace;color:#5B7CFF;background:rgba(91,124,255,.16);border:1px solid rgba(91,124,255,.32)">D</span>
             <div style="min-width:0;flex:1">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font:600 15.5px 'Geist Mono',monospace;letter-spacing:-.01em;word-break:break-word">deepseek-v3</span><span style="font:600 10.5px Geist,sans-serif;padding:3px 8px;border-radius:999px;color:var(--warn);background:color-mix(in oklab,var(--warn) 14%,transparent);border:1px solid color-mix(in oklab,var(--warn) 34%,transparent);white-space:nowrap">Chập chờn</span></div>
-              <div style="font-size:12.5px;color:var(--mut);margin-top:3px">DeepSeek · Token-based</div>
+              <div style="font-size:12.5px;color:var(--mut);margin-top:3px">DeepSeek · Theo request</div>
             </div>
             <span style="flex:none;color:var(--mut);font-size:15px;cursor:pointer" title="Sao chép model ID">⧉</span>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px">
-            <div><div style="font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;font-weight:600">Input</div><div style="font:700 17px 'Geist Mono',monospace;margin-top:5px">280 <span style="font-weight:400;font-size:12.5px;color:var(--mut)">mzđ / 1M</span></div></div>
-            <div><div style="font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;font-weight:600">Output</div><div style="font:700 17px 'Geist Mono',monospace;margin-top:5px">1,100 <span style="font-weight:400;font-size:12.5px;color:var(--mut)">mzđ / 1M</span></div></div>
+          <div style="margin-top:16px">
+            <div style="font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;font-weight:600">Giá</div>
+            <div style="font:700 17px 'Geist Mono',monospace;margin-top:5px">20 <span style="font-weight:400;font-size:12.5px;color:var(--mut)">mzđ / request</span></div>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;font-size:12.5px">
@@ -768,9 +775,22 @@ export OPENAI_BASE_URL="https://llm.mrdnd.dev/v1"</pre>
             <span style="font:500 13px Geist,sans-serif;padding:12px 14px;border-radius:12px;color:var(--mut)">Lịch sử sử dụng</span>
             <span style="font:500 13px Geist,sans-serif;padding:12px 14px;border-radius:12px;color:var(--mut)">Lịch sử Voucher</span>
           </nav>
-          <div style="border-top:1px solid var(--bd);padding:14px 16px;margin-top:120px;display:flex;align-items:center;justify-content:space-between">
-            <div><div style="font-size:12.5px;font-weight:600">nguyen.dung</div><div style="font:400 11px 'Geist Mono',monospace;color:var(--mut)">ID: 10482</div></div>
-            <span style="font-size:12.5px;color:var(--mut)">Đăng xuất</span>
+          <div style="border-top:1px solid var(--bd);padding:12px 14px;margin-top:120px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;flex:none;border-radius:999px;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;align-items:center;justify-content:center;color:#fff;font:700 12px Geist,sans-serif">D</div>
+              <div><div style="font-size:12.5px;font-weight:600">nguyen.dung</div><div style="font:400 11px 'Geist Mono',monospace;color:var(--mut)">ID: 10482</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="flex:1;display:flex;border:1px solid var(--bdS);border-radius:10px;overflow:hidden">
+                <span style="flex:1;display:flex;align-items:center;justify-content:center;padding:5px 0;color:var(--tx);background:var(--surf)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2 2M17.8 17.8l2 2M2 12h3M19 12h3M4.2 19.8l2-2M17.8 6.2l2-2"></path></svg></span>
+                <span style="flex:1;display:flex;align-items:center;justify-content:center;padding:5px 0;color:var(--mut);border-left:1px solid var(--bdS)"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"></path></svg></span>
+              </div>
+              <div style="flex:1;display:flex;border:1px solid var(--bdS);border-radius:10px;overflow:hidden">
+                <span style="flex:1;display:flex;align-items:center;justify-content:center;padding:5px 0;font:700 10.5px Geist,sans-serif;color:var(--tx);background:var(--surf)">VI</span>
+                <span style="flex:1;display:flex;align-items:center;justify-content:center;padding:5px 0;font:700 10.5px Geist,sans-serif;color:var(--mut);border-left:1px solid var(--bdS)">EN</span>
+              </div>
+              <span style="flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:1px solid var(--bdS);border-radius:10px;color:var(--mut)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg></span>
+            </div>
           </div>
         </div>
       </div>

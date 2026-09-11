@@ -16,13 +16,15 @@ export interface ModelPricingItem {
   outputPrice: string;
   priceUnit: "per-million-tokens" | "per-request";
   available: boolean;
-  group: string;
+  groups: string[];
   /** Live-traffic health derived by the server page. */
   status?: "stable" | "degraded" | "error";
   /** Average latency in seconds, when the gateway reported one. */
   latency?: number;
   /** Average output tokens per second during the latest 24-hour window. */
   tokensPerSecond?: number;
+  /** One success-rate sample per measured hourly bucket in the trailing 24 hours. */
+  uptimeSeries?: Array<{ ts: number; successRate: number }>;
 }
 
 type HealthPresentation = {
@@ -43,19 +45,79 @@ const HEALTH_PRESENTATION: Record<
   error: { label: "Lỗi", variant: "revoked" },
 };
 
+type HealthFilter = "all" | "stable" | "degraded" | "error";
+
+const HEALTH_FILTERS: Array<{ value: HealthFilter; label: string; dotClassName?: string }> = [
+  { value: "all", label: "Tất cả" },
+  { value: "stable", label: "Ổn định", dotClassName: "bg-[var(--ok)]" },
+  { value: "degraded", label: "Chập chờn", dotClassName: "bg-[var(--warn)]" },
+  { value: "error", label: "Lỗi", dotClassName: "bg-[var(--bad)]" },
+];
+
+function groupBadgeClassName(group: string): string {
+  return group.toLowerCase() === "vip"
+    ? "border-warn-tint bg-warn-tint text-[var(--warn)]"
+    : "border-[color-mix(in_oklab,var(--g2)_32%,transparent)] bg-[color-mix(in_oklab,var(--g2)_14%,transparent)] text-[var(--acc)]";
+}
+
+function uptimeColor(successRate: number): string {
+  if (successRate >= 90) return "bg-[var(--ok)]";
+  if (successRate >= 50) return "bg-[var(--warn)]";
+  return "bg-[var(--bad)]";
+}
+
+function UptimeTimeline({ series }: { series: ModelPricingItem["uptimeSeries"] }) {
+  const points: Record<string, number> = {};
+  for (const point of series ?? []) {
+    points[Math.floor(point.ts / 3600)] = point.successRate;
+  }
+  const currentHour = Math.floor(Date.now() / 3_600_000);
+  const hours = Array.from({ length: 24 }, (_, index) => currentHour - 23 + index);
+  const average = series?.length
+    ? series.reduce((total, point) => total + point.successRate, 0) / series.length
+    : undefined;
+
+  return (
+    <div className="min-w-[150px] flex-1">
+      <div className="flex justify-between text-[11.5px] font-semibold text-[var(--mut)]">
+        <span>Uptime 24h</span>
+        <span className="text-[var(--tx)]">{average === undefined ? "—" : `${average.toFixed(1)}%`}</span>
+      </div>
+      <div className="mt-1.5 flex h-3 gap-[3px]" aria-label={average === undefined ? "Uptime 24 giờ: không có dữ liệu" : `Uptime 24 giờ: ${average.toFixed(1)}%`}>
+        {hours.map((hour) => {
+          const successRate = points[hour];
+          return (
+            <span
+              key={hour}
+              title={successRate === undefined ? "Không có request" : `${successRate.toFixed(1)}% thành công`}
+              className={`flex-1 rounded-[2px] ${successRate === undefined ? "bg-[var(--bd)]" : uptimeColor(successRate)}`}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
 export function ModelPricingGrid({ models }: { models: ModelPricingItem[] }) {
   const [query, setQuery] = useState("");
+  const [providerFilter, setProviderFilter] = useState("all");
+  const [healthFilter, setHealthFilter] = useState<HealthFilter>("all");
   const [copied, setCopied] = useState<string | null>(null);
 
   const groups = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    const visible = normalizedQuery
-      ? models.filter((model) =>
-          `${model.name} ${model.provider}`
-            .toLowerCase()
-            .includes(normalizedQuery),
-        )
-      : models;
+    const visible = models.filter((model) => {
+      const matchesQuery = `${model.name} ${model.provider}`
+        .toLowerCase()
+        .includes(normalizedQuery);
+      return (
+        matchesQuery &&
+        (providerFilter === "all" || model.provider === providerFilter) &&
+        (healthFilter === "all" || model.status === healthFilter)
+      );
+    });
 
     return visible.reduce<Record<string, ModelPricingItem[]>>(
       (result, model) => {
@@ -64,7 +126,7 @@ export function ModelPricingGrid({ models }: { models: ModelPricingItem[] }) {
       },
       {},
     );
-  }, [models, query]);
+  }, [healthFilter, models, providerFilter, query]);
 
   async function copyModelId(name: string) {
     await navigator.clipboard?.writeText(name);
@@ -87,6 +149,44 @@ export function ModelPricingGrid({ models }: { models: ModelPricingItem[] }) {
           className="h-11 rounded-full pr-4 pl-10"
         />
       </label>
+      <div className="mb-5 space-y-2.5">
+        <div className="flex flex-wrap gap-2">
+          {[["all", "Tất cả", models.length] as const, ...Object.entries(models.reduce<Record<string, number>>((counts, model) => {
+            counts[model.provider] = (counts[model.provider] ?? 0) + 1;
+            return counts;
+          }, {})).sort(([left], [right]) => left.localeCompare(right))].map(([provider, labelOrCount, count]) => {
+            const label = provider === "all" ? labelOrCount : provider;
+            const total = provider === "all" ? count : labelOrCount;
+            return (
+              <button
+                key={provider}
+                type="button"
+                onClick={() => setProviderFilter(provider)}
+                className={providerFilter === provider ? "rounded-full bg-brand-gradient px-3.5 py-1.5 text-xs font-semibold text-white" : "rounded-full border border-[var(--bd)] px-3.5 py-1.5 text-xs font-medium text-[var(--mut)] hover:border-[var(--bdS)] hover:text-[var(--tx)]"}
+              >
+                {label} · {total}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-1 font-mono text-[11px] font-semibold tracking-[0.1em] text-[var(--mut)] uppercase">Sức khoẻ</span>
+          {HEALTH_FILTERS.map((filter) => {
+            const count = filter.value === "all" ? models.length : models.filter((model) => model.status === filter.value).length;
+            return (
+              <button
+                key={filter.value}
+                type="button"
+                onClick={() => setHealthFilter(filter.value)}
+                className={healthFilter === filter.value ? "rounded-full border border-[var(--bdS)] bg-[var(--surf)] px-3 py-1.5 text-xs font-semibold text-[var(--tx)]" : "rounded-full border border-[var(--bd)] px-3 py-1.5 text-xs font-medium text-[var(--mut)] hover:border-[var(--bdS)] hover:text-[var(--tx)]"}
+              >
+                {filter.dotClassName && <span className={`mr-1.5 inline-block size-[7px] rounded-full ${filter.dotClassName}`} />}
+                {filter.label} · {count}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {Object.keys(groups).length === 0 ? (
         <div className="rounded-[var(--r)] border border-dashed border-[var(--bdS)] px-6 py-14 text-center text-[var(--mut)]">
@@ -102,26 +202,20 @@ export function ModelPricingGrid({ models }: { models: ModelPricingItem[] }) {
                   <h2 className="text-[17px] font-semibold">{provider}</h2>
                   <Badge variant="secondary">{providerModels.length}</Badge>
                 </div>
-                <div className="grid gap-4 lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                   {providerModels.map((model) => {
-                    const health = model.available
-                      ? (model.status && HEALTH_PRESENTATION[model.status])
-                      : { label: "Không khả dụng", variant: "revoked" as const };
+                    const health = model.status && HEALTH_PRESENTATION[model.status];
                     return (
                       <Card
                         key={model.name}
-                        className={
-                          !model.available
-                            ? "opacity-65"
-                            : "transition-colors hover:border-[var(--bdS)]"
-                        }
+                        className="transition-colors hover:border-[var(--bdS)]"
                       >
                         <CardContent className="p-5">
                           <div className="flex items-start gap-3.5">
                             {model.providerLogoSrc ? (
-                              // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={model.providerLogoSrc}
+                                alt={`${model.provider} logo`}
                                 className={`size-11 shrink-0 rounded-lg object-contain ${model.providerLogoClassName ?? ""}`}
                               />
                             ) : (
@@ -158,47 +252,69 @@ export function ModelPricingGrid({ models }: { models: ModelPricingItem[] }) {
                             </Button>
                           </div>
 
-                          <div className="mt-5 grid grid-cols-2 gap-4">
-                            <div>
+                          {model.priceUnit === "per-request" ? (
+                            <div className="mt-5">
                               <p className="text-[11.5px] font-semibold tracking-[0.07em] uppercase text-[var(--mut)]">
-                                {model.priceUnit === "per-request" ? "Mỗi yêu cầu" : "Input"}
+                                Giá
                               </p>
                               <p className="mt-1.5 font-mono text-[17px] font-bold">
                                 {model.inputPrice}{" "}
                                 <span className="text-[12.5px] font-normal text-[var(--mut)]">
-                                  mzđ {model.priceUnit === "per-request" ? "/ request" : "/ 1M"}
+                                  mzđ / request
                                 </span>
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="mt-5 grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-[11.5px] font-semibold tracking-[0.07em] uppercase text-[var(--mut)]">
+                                  Input
+                                </p>
+                                <p className="mt-1.5 font-mono text-[17px] font-bold">
+                                  {model.inputPrice}{" "}
+                                  <span className="text-[12.5px] font-normal text-[var(--mut)]">
+                                    mzđ / 1M
+                                  </span>
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[11.5px] font-semibold tracking-[0.07em] uppercase text-[var(--mut)]">
+                                  Output
+                                </p>
+                                <p className="mt-1.5 font-mono text-[17px] font-bold">
+                                  {model.outputPrice}{" "}
+                                  <span className="text-[12.5px] font-normal text-[var(--mut)]">
+                                    mzđ / 1M
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                          <div className="mt-4 flex flex-wrap items-center gap-1.5 text-[12.5px]">
+                            <span className="mr-1 text-[var(--mut)]">Nhóm</span>
+                            {model.groups.map((group) => (
+                              <Badge
+                                key={group}
+                                variant="secondary"
+                                className={groupBadgeClassName(group)}
+                              >
+                                {group}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="mt-4 flex flex-wrap items-end gap-x-[18px] gap-y-3 border-t border-[var(--bd)] pt-3.5 text-[12.5px]">
+                            <UptimeTimeline series={model.uptimeSeries} />
+                            <div>
+                              <p className="text-[11.5px] font-semibold text-[var(--mut)]">Lat.</p>
+                              <p className="mt-1 font-mono text-sm font-semibold">
+                                {model.latency === undefined ? "—" : `${model.latency.toFixed(2)}s`}
                               </p>
                             </div>
                             <div>
-                              <p className="text-[11.5px] font-semibold tracking-[0.07em] uppercase text-[var(--mut)]">
-                                Output
+                              <p className="text-[11.5px] font-semibold text-[var(--mut)]">TPS</p>
+                              <p className="mt-1 font-mono text-sm font-semibold">
+                                {model.tokensPerSecond === undefined ? "—" : model.tokensPerSecond.toFixed(1)}
                               </p>
-                              <p className="mt-1.5 font-mono text-[17px] font-bold">
-                                {model.outputPrice}{" "}
-                                <span className="text-[12.5px] font-normal text-[var(--mut)]">
-                                  {model.priceUnit === "per-request" ? "Không áp dụng" : "mzđ / 1M"}
-                                </span>
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--bd)] pt-3.5 text-[12.5px]">
-                            <span>
-                              <span className="text-[var(--mut)]">Nhóm </span>
-                              <span className="font-semibold">{model.group}</span>
-                            </span>
-                            <div className="flex items-center gap-3 text-[var(--mut)]">
-                              <span>
-                                {model.tokensPerSecond === undefined
-                                  ? "— tok/s"
-                                  : `${model.tokensPerSecond.toFixed(1)} tok/s`}
-                              </span>
-                              <span>
-                                {model.latency === undefined
-                                  ? "— độ trễ"
-                                  : `${model.latency.toFixed(2)}s`}
-                              </span>
                             </div>
                           </div>
                         </CardContent>

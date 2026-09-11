@@ -5,7 +5,6 @@ import { getSession } from "@/lib/auth";
 import { ArrowRight, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const tools = ["Claude Code", "OpenCode", "OMP", "Cursor", "Hermes"];
 
 const ecosystem = [
   {
@@ -73,29 +72,6 @@ export default async function HomePage() {
             </div>
           </Link>
 
-          <nav className="flex items-center gap-[18px]">
-            <Link
-              href="/models"
-              className="text-[13px] text-[var(--mut)] hover:text-[var(--tx)] transition-colors"
-            >
-              Bảng giá
-            </Link>
-            {session ? (
-              <Link
-                href="/dashboard"
-                className={cn(buttonVariants({ size: "sm" }))}
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className={cn(buttonVariants({ size: "sm" }))}
-              >
-                Đăng nhập
-              </Link>
-            )}
-          </nav>
         </div>
       </header>
 
@@ -166,30 +142,6 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="relative mx-auto mt-9 max-w-[660px] overflow-hidden rounded-[var(--r)] border border-white/8 bg-[var(--code)] text-left">
-            <div className="flex items-center gap-2 border-b border-white/7 px-4 py-2.5">
-              <div className="flex gap-1.5">
-                <span className="size-[9px] rounded-full bg-[#FF5F57]" />
-                <span className="size-[9px] rounded-full bg-[#FEBC2E]" />
-                <span className="size-[9px] rounded-full bg-[#28C840]" />
-              </div>
-              <span className="ml-1.5 font-mono text-[11px] font-medium text-[#8E86A8]">Quick start</span>
-            </div>
-            <pre className="m-0 overflow-x-auto px-5 py-[18px] font-mono text-[12.5px] leading-[1.85] text-[var(--codeTx)]">{`export OPENAI_API_KEY="sk-your-key-here"
-export OPENAI_BASE_URL="https://llm.mrdnd.dev/v1"
-
-curl $OPENAI_BASE_URL/chat/completions \\
-  -H "Authorization: Bearer $OPENAI_API_KEY" \\
-  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"Hello!"}]}'`}</pre>
-          </div>
-
-          <div className="relative mt-8 flex flex-wrap justify-center gap-2.5">
-            {tools.map((tool) => (
-              <span key={tool} className="rounded-full border border-[var(--bd)] px-4 py-[7px] font-mono text-[12.5px] font-medium text-[var(--mut)]">
-                {tool}
-              </span>
-            ))}
-          </div>
         </div>
 
         {/* Ecosystem */}

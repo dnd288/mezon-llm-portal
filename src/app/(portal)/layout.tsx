@@ -2,11 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { LogOut } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
-import { MobileNav } from "@/components/mobile-nav";
 import { PortalNavList } from "@/components/portal-nav";
+import { MobileNav } from "@/components/mobile-nav";
 import Image from "next/image";
 
 import type { Metadata } from "next";
@@ -44,13 +42,25 @@ export default async function PortalLayout({
         </div>
         <PortalNavList />
         <Separator />
-        <div className="p-3">
-          <p className="truncate px-2 text-sm font-medium">
-            {session.username}
-          </p>
-          <p className="truncate px-2 text-xs text-[var(--mut)]">
-            ID: {session.userId}
-          </p>
+        <div className="border-t border-[var(--bd)] p-3">
+          <div className="flex items-center gap-2 px-1.5 py-0.5">
+            <div className="bg-brand-gradient flex size-[30px] shrink-0 items-center justify-center rounded-full text-[12.5px] font-bold text-white">
+              {session.username.slice(0, 1).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-semibold">{session.username}</p>
+              <p className="truncate font-mono text-[11px] text-[var(--mut)]">
+                ID: {session.userId}
+              </p>
+            </div>
+          </div>
+          <a
+            href="/api/auth/logout"
+            className="mt-2 flex items-center gap-2 rounded-[var(--rs)] px-2.5 py-2 text-[12.5px] font-semibold text-[var(--mut)] transition-colors hover:bg-[var(--surf2)] hover:text-[var(--tx)]"
+          >
+            <LogOut className="size-[13px]" />
+            Đăng xuất
+          </a>
         </div>
       </aside>
 
@@ -59,7 +69,7 @@ export default async function PortalLayout({
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b border-[var(--bd)] bg-[var(--bg)]/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-[var(--bg)]/60">
           <div className="flex items-center gap-2">
             {/* Mobile hamburger */}
-            <MobileNav />
+            <MobileNav username={session.username} userId={session.userId} />
             <Link
               href="/dashboard"
               className="flex items-center gap-2 md:hidden"
@@ -72,18 +82,6 @@ export default async function PortalLayout({
               />
               <span className="font-semibold">Mezon LLM</span>
             </Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-[var(--mut)] sm:inline">
-              {session.username}
-            </span>
-            <a
-              href="/api/auth/logout"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Đăng xuất</span>
-            </a>
           </div>
         </header>
 

@@ -121,8 +121,8 @@ export default async function ModelsPage() {
                 ...model,
                 model_ratio: model.model_ratio * model.completion_ratio,
               }),
-        available: status ? status.probe.alive : true,
-        group: model.enable_groups?.[0] || "default",
+        available: true,
+        groups: model.enable_groups?.length ? model.enable_groups : ["default"],
         status: health,
         latency: metric?.avg_latency_ms
           ? metric.avg_latency_ms / 1000
@@ -132,6 +132,10 @@ export default async function ModelsPage() {
               ? status.probe.latency_ms / 1000
               : undefined,
         tokensPerSecond: metric?.avg_tps,
+        uptimeSeries: metric?.recent_success_series?.map((point) => ({
+          ts: point.ts,
+          successRate: point.success_rate,
+        })),
       };
     })
     .sort((left, right) => left.name.localeCompare(right.name));
@@ -139,7 +143,7 @@ export default async function ModelsPage() {
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg)]">
       <header className="sticky top-0 z-40 border-b border-[var(--bd)] bg-[var(--bg)]/95 backdrop-blur">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2.5">
             <Image
               src="/mezon-logo-icon.svg"
@@ -174,7 +178,7 @@ export default async function ModelsPage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">
         <h1 className="text-[26px] font-bold tracking-[-0.02em]">
           Bảng giá mô hình
         </h1>
@@ -187,7 +191,7 @@ export default async function ModelsPage() {
       </main>
 
       <footer className="border-t border-[var(--bd)] px-4 py-[18px]">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3.5 text-[12.5px] text-[var(--mut)]">
+        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3.5 text-[12.5px] text-[var(--mut)]">
           <span>© 2026 Mezon LLM — thành viên hệ sinh thái Mezon.</span>
           <Link
             href="/"
