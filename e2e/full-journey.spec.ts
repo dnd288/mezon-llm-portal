@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { createMockSessionToken } from "./fixtures/auth";
+import { createMockSessionToken, MOCK_URL } from "./fixtures/auth";
 
 test.describe("Complete End-to-End User Journey (Full Flow)", () => {
   test.beforeEach(async ({ request }) => {
     // Reset mock backend state before test
-    await request.post("http://localhost:3099/__test_reset");
+    await request.post(`${MOCK_URL}/__test_reset`);
   });
 
   test("unauthenticated visitor explores landing, logs in, manages tokens, redeems voucher, inspects logs, and logs out", async ({

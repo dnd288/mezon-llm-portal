@@ -1,6 +1,8 @@
 import { test as base, type Page } from "@playwright/test";
 import { SignJWT } from "jose";
 
+export const MOCK_URL = `http://localhost:${process.env.MOCK_PORT || "3099"}`;
+
 export interface MockUserOptions {
   userId?: number;
   username?: string;

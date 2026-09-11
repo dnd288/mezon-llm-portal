@@ -1,9 +1,9 @@
-import { test, expect } from "./fixtures/auth";
+import { test, expect, MOCK_URL } from "./fixtures/auth";
 
 test.describe("Usage Logs & Pagination Flow", () => {
   test.beforeEach(async ({ authedPage, request }) => {
     // Reset mock backend state
-    await request.post("http://localhost:3099/__test_reset");
+    await request.post(`${MOCK_URL}/__test_reset`);
     await authedPage.goto("/logs");
   });
 
@@ -49,7 +49,7 @@ test.describe("Usage Logs & Pagination Flow", () => {
     request,
   }) => {
     // Seed 25 log records (PAGE_SIZE is 20, creating 2 pages)
-    await request.post("http://localhost:3099/__test_set_state", {
+    await request.post(`${MOCK_URL}/__test_set_state`, {
       data: { seedPagination: true },
     });
 

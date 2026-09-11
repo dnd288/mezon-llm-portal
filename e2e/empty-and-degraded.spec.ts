@@ -1,16 +1,16 @@
-import { test, expect } from "./fixtures/auth";
+import { test, expect, MOCK_URL } from "./fixtures/auth";
 
 test.describe("Empty States & Degraded Gateway Handling", () => {
   test.afterEach(async ({ request }) => {
     // Reset state after each test
-    await request.post("http://localhost:3099/__test_reset");
+    await request.post(`${MOCK_URL}/__test_reset`);
   });
 
   test("displays empty state on /tokens when user has no API keys", async ({
     authedPage,
     request,
   }) => {
-    await request.post("http://localhost:3099/__test_set_state", {
+    await request.post(`${MOCK_URL}/__test_set_state`, {
       data: { emptyTokens: true },
     });
 
@@ -25,7 +25,7 @@ test.describe("Empty States & Degraded Gateway Handling", () => {
     authedPage,
     request,
   }) => {
-    await request.post("http://localhost:3099/__test_set_state", {
+    await request.post(`${MOCK_URL}/__test_set_state`, {
       data: { emptyLogs: true },
     });
 
@@ -38,7 +38,7 @@ test.describe("Empty States & Degraded Gateway Handling", () => {
     authedPage,
     request,
   }) => {
-    await request.post("http://localhost:3099/__test_set_state", {
+    await request.post(`${MOCK_URL}/__test_set_state`, {
       data: { emptyLogs: true },
     });
 
@@ -51,7 +51,7 @@ test.describe("Empty States & Degraded Gateway Handling", () => {
     authedPage,
     request,
   }) => {
-    await request.post("http://localhost:3099/__test_set_state", {
+    await request.post(`${MOCK_URL}/__test_set_state`, {
       data: { gatewayError: true },
     });
 
@@ -71,12 +71,12 @@ test.describe("Empty States & Degraded Gateway Handling", () => {
     authedPage,
     request,
   }) => {
-    await request.post("http://localhost:3099/__test_set_state", {
+    await request.post(`${MOCK_URL}/__test_set_state`, {
       data: { gatewayError: true },
     });
 
     await authedPage.goto("/tokens");
     await expect(authedPage.getByRole("heading", { name: "API Keys" })).toBeVisible();
-    await expect(authedPage.locator(".text-destructive")).toBeVisible();
+    await expect(authedPage.getByText(/Không thể tải|API 502/i)).toBeVisible();
   });
 });

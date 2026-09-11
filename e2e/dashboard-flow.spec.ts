@@ -1,8 +1,8 @@
-import { test, expect } from "./fixtures/auth";
+import { test, expect, MOCK_URL } from "./fixtures/auth";
 
 test.describe("Dashboard Flow & Features", () => {
   test.beforeEach(async ({ authedPage, request }) => {
-    await request.post("http://localhost:3099/__test_reset");
+    await request.post(`${MOCK_URL}/__test_reset`);
     await authedPage.goto("/dashboard");
   });
 

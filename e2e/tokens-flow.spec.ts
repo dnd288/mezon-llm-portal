@@ -1,9 +1,9 @@
-import { test, expect } from "./fixtures/auth";
+import { test, expect, MOCK_URL } from "./fixtures/auth";
 
 test.describe("API Keys (Tokens) Lifecycle Flow", () => {
   test.beforeEach(async ({ authedPage, request }) => {
     // Reset mock backend state before each test
-    await request.post("http://localhost:3099/__test_reset");
+    await request.post(`${MOCK_URL}/__test_reset`);
     await authedPage.goto("/tokens");
   });
 
