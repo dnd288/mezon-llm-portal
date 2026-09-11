@@ -116,11 +116,14 @@ export interface CreateTokenPayload {
 }
 
 export async function getTokens(opts: ApiOptions): Promise<Token[]> {
-  const res = await request<{ success: boolean; data: Token[] }>(
-    "/api/token/",
+  const res = await request<{
+    success: boolean;
+    data: { items: Token[] | null; page: number; page_size: number; total: number } | null;
+  }>(
+    "/api/token/?page_size=100",
     opts,
   );
-  return res.data;
+  return res.data?.items ?? [];
 }
 
 export async function createToken(
@@ -185,11 +188,14 @@ export interface TopUpRecord {
 export async function getUserTopUps(
   opts: ApiOptions,
 ): Promise<TopUpRecord[]> {
-  const res = await request<{ success: boolean; data: TopUpRecord[] }>(
-    "/api/user/topup/self",
+  const res = await request<{
+    success: boolean;
+    data: { items: TopUpRecord[] | null; page: number; page_size: number; total: number } | null;
+  }>(
+    "/api/user/topup/self?page_size=100",
     opts,
   );
-  return res.data;
+  return res.data?.items ?? [];
 }
 
 // ──────────────────────────────────────────────
@@ -209,7 +215,7 @@ export interface LogEntry {
   prompt_tokens: number;
   completion_tokens: number;
   channel_id: number;
-  elapsed_time: number;
+  use_time: number;
 }
 
 export interface LogsResponse {
@@ -218,22 +224,50 @@ export interface LogsResponse {
 }
 
 export async function getUserLogs(
-  opts: ApiOptions & { page?: number; size?: number },
+  opts: ApiOptions & {
+    page?: number;
+    size?: number;
+    type?: number;
+    startTimestamp?: number;
+    endTimestamp?: number;
+  },
 ): Promise<LogsResponse> {
-  const page = opts.page ?? 0;
+  const page = (opts.page ?? 0) + 1; // API is 1-indexed
   const size = opts.size ?? 20;
-  const res = await request<{ success: boolean; data: LogEntry[]; total: number }>(
-    `/api/log/self?p=${page}&size=${size}`,
+  const params = new URLSearchParams({ p: String(page), size: String(size) });
+  if (opts.type != null) params.set("type", String(opts.type));
+  if (opts.startTimestamp != null) params.set("start_timestamp", String(opts.startTimestamp));
+  if (opts.endTimestamp != null) params.set("end_timestamp", String(opts.endTimestamp));
+  const res = await request<{
+    success: boolean;
+    data: { items: LogEntry[] | null; page: number; page_size: number; total: number } | null;
+  }>(
+    `/api/log/self?${params}`,
     opts,
   );
-  return { data: res.data, total: res.total };
+  return { data: res.data?.items ?? [], total: res.data?.total ?? 0 };
+}
+
+export interface UserLogsStat {
+  quota: number;
+  rpm: number;
+  tpm: number;
 }
 
 export async function getUserLogsStat(
-  opts: ApiOptions,
-): Promise<Record<string, unknown>> {
-  const res = await request<{ success: boolean; data: Record<string, unknown> }>(
-    "/api/log/self/stat",
+  opts: ApiOptions & {
+    startTimestamp?: number;
+    endTimestamp?: number;
+    type?: number;
+  },
+): Promise<UserLogsStat> {
+  const params = new URLSearchParams();
+  if (opts.startTimestamp != null) params.set("start_timestamp", String(opts.startTimestamp));
+  if (opts.endTimestamp != null) params.set("end_timestamp", String(opts.endTimestamp));
+  if (opts.type != null) params.set("type", String(opts.type));
+  const qs = params.toString();
+  const res = await request<{ success: boolean; data: UserLogsStat }>(
+    `/api/log/self/stat${qs ? `?${qs}` : ""}`,
     opts,
   );
   return res.data;
@@ -253,11 +287,11 @@ export interface ModelInfo {
 export async function getModels(
   opts: ApiOptions,
 ): Promise<ModelInfo[]> {
-  const res = await request<{ success: boolean; data: ModelInfo[] }>(
+  const res = await request<{ success: boolean; data: ModelInfo[] | null }>(
     "/api/user/models",
     opts,
   );
-  return res.data;
+  return res.data ?? [];
 }
 
 export interface PricingModel {
@@ -274,10 +308,10 @@ export interface PricingModel {
 }
 
 export async function getPricing(): Promise<PricingModel[]> {
-  const res = await request<{ success: boolean; data: PricingModel[] }>(
+  const res = await request<{ success: boolean; data: PricingModel[] | null }>(
     "/api/pricing",
   );
-  return res.data;
+  return res.data ?? [];
 }
 
 export interface ModelProbe {
@@ -298,9 +332,9 @@ export interface ModelStatus {
 export async function getModelStatus(): Promise<ModelStatus[]> {
   const res = await request<{
     success: boolean;
-    data: { models: ModelStatus[] };
+    data: { models: ModelStatus[] | null } | null;
   }>("/api/status/models");
-  return res.data.models;
+  return res.data?.models ?? [];
 }
 
 export interface PerformanceMetricPoint {
@@ -320,11 +354,11 @@ export async function getPerformanceMetrics(
   hours = 24,
 ): Promise<PerformanceMetric[]> {
   const res = await request<{
-    data: { models: PerformanceMetric[] };
+    data: { models: PerformanceMetric[] | null } | null;
   }>(`/api/perf-metrics/summary?hours=${hours}`, {
     next: { revalidate: 300 },
   });
-  return res.data.models;
+  return res.data?.models ?? [];
 }
 
 // ──────────────────────────────────────────────
@@ -334,11 +368,11 @@ export async function getPerformanceMetrics(
 export async function getUserQuotaDates(
   opts: ApiOptions,
 ): Promise<Record<string, unknown>[]> {
-  const res = await request<{ success: boolean; data: Record<string, unknown>[] }>(
+  const res = await request<{ success: boolean; data: Record<string, unknown>[] | null }>(
     "/api/data/self",
     opts,
   );
-  return res.data;
+  return res.data ?? [];
 }
 
 // ──────────────────────────────────────────────

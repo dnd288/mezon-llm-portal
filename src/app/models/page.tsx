@@ -163,12 +163,6 @@ export default async function ModelsPage() {
           </Link>
           <nav className="flex items-center gap-4">
             <Link
-              href="/models"
-              className="text-[13px] text-[var(--mut)] transition-colors hover:text-[var(--tx)]"
-            >
-              Bảng giá
-            </Link>
-            <Link
               href={session ? "/dashboard" : "/login"}
               className={cn(buttonVariants({ size: "sm" }))}
             >

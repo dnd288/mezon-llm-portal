@@ -30,6 +30,15 @@ export function formatDate(timestamp: number): string {
   });
 }
 
+export function formatDuration(seconds: number): string {
+  if (!seconds || seconds <= 0) return "—";
+  if (seconds < 1) return `${Math.round(seconds * 1000)}ms`;
+  if (seconds < 60) return `${seconds.toFixed(1)}s`;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}m ${Math.round(secs)}s`;
+}
+
 export function relativeTime(timestamp: number): string {
   const now = Date.now() / 1000;
   const diff = now - timestamp;

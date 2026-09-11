@@ -1,160 +1,138 @@
 import { getSession } from "@/lib/auth";
-import { getUserTopUps, type TopUpRecord } from "@/lib/api";
+import { getUserLogs, type LogEntry } from "@/lib/api";
 import { formatDate, formatQuota } from "@/lib/quota";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { ArrowLeft, CreditCard, Gift } from "lucide-react";
+import { Gift } from "lucide-react";
 import { redirect } from "next/navigation";
 import { VoucherDialog } from "@/components/voucher-dialog";
 
-function getStatusVariant(status: string) {
-  switch (status?.toLowerCase()) {
-    case "success":
-    case "completed":
-    case "done":
-      return "active" as const;
-    case "pending":
-      return "expired" as const;
-    case "failed":
-    case "cancelled":
-      return "revoked" as const;
-    default:
-      return "outline" as const;
-  }
+/** LogTypeTopup = 1 in the backend */
+const LOG_TYPE_TOPUP = 1;
+
+interface ParsedTopUp {
+  label: string;
+  quota: number | null;
+  money: string | null;
 }
 
-function getStatusLabel(status: string) {
-  switch (status?.toLowerCase()) {
-    case "success":
-    case "completed":
-    case "done":
-      return "Thành công";
-    case "pending":
-      return "Đang xử lý";
-    case "failed":
-    case "cancelled":
-      return "Thất bại";
-    default:
-      return status || "—";
+/**
+ * Parse backend log content into a structured top-up record.
+ */
+function parseTopUp(content: string): ParsedTopUp {
+  // Voucher redeem: "通过兑换码充值 500000.000000 mzđ 额度，兑换码ID 97"
+  if (content.includes("兑换码")) {
+    const m = content.match(/充值\s+([\d.]+)\s*mzđ/i);
+    return {
+      label: "Nạp bằng voucher",
+      quota: m ? Math.round(Number(m[1])) : null,
+      money: null,
+    };
   }
+
+  // Mezon on-chain: "Mezon top-up successful: transferred 1000000 dong, credited 1000000 mzđ (1:1), tx ..."
+  if (content.includes("Mezon top-up")) {
+    const qm = content.match(/credited\s+([\d.]+)\s*mzđ/i);
+    const dm = content.match(/transferred\s+([\d.]+)\s*dong/i);
+    return {
+      label: "Nạp qua Mezon",
+      quota: qm ? Math.round(Number(qm[1])) : null,
+      money: dm ? `${Number(dm[1]).toLocaleString("vi-VN")}đ` : null,
+    };
+  }
+
+  // Waffo Pancake: "Waffo Pancake充值成功，充值额度: %v，支付金额: %.2f"
+  if (content.includes("Waffo") || content.includes("Pancake")) {
+    const qm = content.match(/充值额度:\s*([\d.]+)/);
+    const dm = content.match(/支付金额:\s*([\d.]+)/);
+    return {
+      label: "Nạp qua Waffo Pancake",
+      quota: qm ? Math.round(Number(qm[1])) : null,
+      money: dm ? `${Number(dm[1]).toLocaleString("vi-VN")}đ` : null,
+    };
+  }
+
+  // Generic top-up
+  if (content.includes("充值")) {
+    const m = content.match(/充值\s*([\d.]+)/);
+    return {
+      label: "Nạp quota",
+      quota: m ? Math.round(Number(m[1])) : null,
+      money: null,
+    };
+  }
+
+  // Subscription
+  if (content.includes("订阅") || content.includes("subscription")) {
+    return { label: "Nạp từ gói đăng ký", quota: null, money: null };
+  }
+
+  return { label: content || "Nạp quota", quota: null, money: null };
 }
 
 export default async function VouchersPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  let topUps: TopUpRecord[];
+  let logs: LogEntry[] = [];
   try {
-    topUps = await getUserTopUps({ accessToken: session.backendAccessToken });
+    const result = await getUserLogs({
+      accessToken: session.backendAccessToken,
+      type: LOG_TYPE_TOPUP,
+      size: 100,
+    });
+    logs = result.data;
   } catch {
-    topUps = [];
+    // keep defaults
   }
-
-  // Sort by create_time descending (newest first)
-  const sortedTopUps = [...topUps].sort(
-    (a, b) => b.create_time - a.create_time,
-  );
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <CreditCard className="h-6 w-6" />
-            Lịch sử nạp
-          </h1>
-          <p className="text-[var(--mut)] mt-1">
-            Xem lịch sử các giao dịch nạp quota vào tài khoản.
-          </p>
-        </div>
+        <div className="text-[17px] font-bold">Lịch sử nạp</div>
         <VoucherDialog />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Giao dịch nạp</CardTitle>
-          <CardDescription>
-            Tổng cộng {sortedTopUps.length} giao dịch
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {sortedTopUps.length === 0 ? (
-            <div className="py-12 text-center">
-              <Gift className="h-12 w-12 mx-auto text-[var(--mut)] mb-4" />
-              <p className="text-[var(--mut)]">
-                Chưa có giao dịch nạp nào.
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Mã giao dịch</TableHead>
-                  <TableHead className="text-right">Số tiền</TableHead>
-                  <TableHead className="text-right">Quota</TableHead>
-                  <TableHead>Ngày nạp</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedTopUps.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell>
-                      <code className="text-xs bg-[var(--surf2)] px-1.5 py-0.5 rounded">
-                        {record.trade_no || `#${record.id}`}
-                      </code>
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {record.money?.toLocaleString() ?? "—"}đ
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {formatQuota(record.amount)}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {formatDate(record.create_time)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(record.status)}>
-                        {getStatusLabel(record.status)}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {/* Transaction list */}
+      {logs.length === 0 ? (
+        <div className="rounded-[var(--rs)] border border-[var(--bd)] bg-[var(--surfS)] p-10 text-center">
+          <Gift className="mx-auto mb-4 h-12 w-12 text-[var(--mut)]" />
+          <p className="text-[var(--mut)]">Chưa có giao dịch nạp nào.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2.5">
+          {logs.map((log) => {
+            const parsed = parseTopUp(log.content);
+            const hasQuota = parsed.quota != null && parsed.quota > 0;
+            return (
+              <div
+                key={log.id}
+                className="flex items-center justify-between gap-3 rounded-[var(--rs)] border border-[var(--bd)] px-4 py-3.5"
+              >
+                {/* Left: label + date */}
+                <div>
+                  <code className="text-xs text-[var(--mut)]">
+                    {parsed.label}
+                  </code>
+                  <div className="mt-1 text-xs text-[var(--mut)]">
+                    {formatDate(log.created_at)}
+                  </div>
+                </div>
 
-      <div>
-        <Link
-          href="/dashboard"
-          className={cn(
-            buttonVariants({ variant: "ghost", size: "sm" }),
-            "gap-1.5 text-[var(--mut)]",
-          )}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Quay lại Dashboard
-        </Link>
-      </div>
+                {/* Right: quota + detail */}
+                <div className="text-right">
+                  <div
+                    className={`font-semibold font-mono text-sm ${
+                      hasQuota ? "text-[var(--ok)]" : "text-[var(--bad)]"
+                    }`}
+                  >
+                    {hasQuota ? `+${formatQuota(parsed.quota!)}` : "—"}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

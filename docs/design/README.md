@@ -48,11 +48,35 @@ Accessibility rule: status is always communicated with **text alongside color** 
 
 | Style | Spec | Use |
 |---|---|---|
-| Display | Geist 26px / 700 / −0.02em | Page headings |
-| Heading | Geist 17px / 600 | Section titles |
+| Display | Geist 22px / 700 / −0.015em | Dashboard greeting only |
+| Heading | Geist 17px / 700 | Page titles, section headings |
 | Body | Geist 14px / 400 | Default text |
+| Caption | Geist 13px / 400 | Page subtitles, descriptions |
 | Mono | Geist Mono 13px / 500 | Key IDs, quota numbers, code snippets |
 | Label | Geist 12px / 600 / 0.1em / uppercase | Table headers, category labels |
+
+### Page layout
+
+All portal pages share a consistent structure via the `(portal)/layout.tsx` shell (sidebar + header + main area). Individual pages follow this pattern:
+
+| Element | Convention | Component |
+|---|---|---|
+| Root wrapper | `<div className="flex flex-col gap-6">` | — |
+| Page header | Title (17px/700) + optional subtitle (13px muted) + optional action slot | `<PageHeader>` |
+| Content area | Tables, cards, or custom content directly — no extra Card wrapper for the page body | — |
+| Empty state | Centered text with icon, `rounded-[var(--rs)] border border-[var(--bd)]` container | — |
+
+The `<PageHeader>` component (`src/components/page-header.tsx`) enforces the shared title pattern:
+
+```tsx
+<PageHeader title="API Keys" subtitle="Quản lý các API key.">
+  <CreateTokenDialog />   {/* action slot, right-aligned */}
+</PageHeader>
+```
+
+**Dashboard exception:** The dashboard uses a personalized greeting at 22px instead of `PageHeader`. This is the only page with a display-size heading.
+
+**Layout provides padding:** `<main>` in the portal layout already applies `p-4 md:p-6`. Pages must not add their own padding.
 
 ### Radius
 
@@ -113,11 +137,12 @@ Each section in the design document maps to a screen or screen state. FR identif
 | # | Section | FR | Repo files |
 |---|---|---|---|
 | 01 | Foundations | — | `src/app/globals.css`, `src/app/layout.tsx` |
-| 02 | Component kit | — | shadcn components, `src/components/` |
+| 02 | Component kit | — | shadcn components, `src/components/page-header.tsx`, `src/components/usage-stats.tsx` |
 | 03 | Landing | FR-2.1 | `src/app/page.tsx` |
-| 04 | Dashboard | FR-3.1 – FR-3.3 | `src/app/(portal)/dashboard/page.tsx`, `src/components/voucher-dialog.tsx` |
+| 04 | Dashboard | FR-3.1 – FR-3.3 | `src/app/(portal)/dashboard/page.tsx`, `src/components/voucher-dialog.tsx`, `src/components/usage-stats.tsx` |
 | 05 | API Keys + create dialog | FR-4.1 – FR-4.3 | `src/app/(portal)/tokens/page.tsx`, `src/components/create-token-dialog.tsx` |
-| 06 | Usage logs + Voucher history | FR-5, FR-6 | `src/app/(portal)/logs/page.tsx`, `src/app/(portal)/vouchers/page.tsx` |
+| 06 | Usage logs | FR-5 | `src/app/(portal)/logs/page.tsx` |
+| 06b | Voucher / top-up history | FR-6 | `src/app/(portal)/vouchers/page.tsx` |
 | 07 | Pricing / Models | FR-2.2 | `src/app/models/page.tsx` |
 | 08 | Login + empty/error states | FR-1.1 | `src/app/login/page.tsx` |
 | 09 | Mobile layouts | NFR-3 | `src/components/mobile-nav.tsx` |

@@ -1,13 +1,6 @@
 import { getSession } from "@/lib/auth";
 import { getUserLogs } from "@/lib/api";
-import { formatDate, formatQuota, formatTokens } from "@/lib/quota";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { formatDate, formatQuota, formatTokens, formatDuration } from "@/lib/quota";
 import {
   Table,
   TableBody,
@@ -16,10 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PageHeader } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { redirect } from "next/navigation";
 
 const PAGE_SIZE = 20;
@@ -54,103 +48,92 @@ export default async function LogsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <FileText className="h-6 w-6" />
-          Nhật ký sử dụng
-        </h1>
-        <p className="text-[var(--mut)] mt-1">
-          Xem lịch sử sử dụng API và quota đã tiêu thụ.
-        </p>
-      </div>
+      <PageHeader
+        title="Nhật ký sử dụng"
+        subtitle="Xem lịch sử sử dụng API và quota đã tiêu thụ."
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lịch sử gọi API</CardTitle>
-          <CardDescription>
-            Tổng cộng {total.toLocaleString()} bản ghi
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {logs.length === 0 ? (
-            <div className="py-12 text-center text-[var(--mut)]">
-              Chưa có dữ liệu sử dụng.
+      {logs.length === 0 ? (
+        <div className="py-12 text-center text-[var(--mut)]">
+          Chưa có dữ liệu sử dụng.
+        </div>
+      ) : (
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Thời gian</TableHead>
+                <TableHead>Model</TableHead>
+                <TableHead>Key</TableHead>
+                <TableHead className="text-right">Token Input</TableHead>
+                <TableHead className="text-right">Token Output</TableHead>
+                <TableHead className="text-right">Fee</TableHead>
+                <TableHead className="text-right">Total Time</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {logs.map((log) => (
+                <TableRow key={log.id}>
+                  <TableCell className="whitespace-nowrap">
+                    {formatDate(log.created_at)}
+                  </TableCell>
+                  <TableCell>
+                    <code className="text-xs bg-[var(--surf2)] px-1.5 py-0.5 rounded">
+                      {log.model_name || "—"}
+                    </code>
+                  </TableCell>
+                  <TableCell className="max-w-[120px] truncate">
+                    {log.token_name || "—"}
+                  </TableCell>
+                  <TableCell className="text-right font-mono">
+                    {formatTokens(log.prompt_tokens)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono">
+                    {formatTokens(log.completion_tokens)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono">
+                    {formatQuota(log.quota)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono">
+                    {formatDuration(log.use_time)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div className="text-sm text-[var(--mut)]">
+              Trang {currentPage} / {totalPages}
             </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Thời gian</TableHead>
-                    <TableHead>Model</TableHead>
-                    <TableHead className="text-right">Token Input</TableHead>
-                    <TableHead className="text-right">Token Output</TableHead>
-                    <TableHead className="text-right">Quota</TableHead>
-                    <TableHead>Token Name</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {logs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="whitespace-nowrap">
-                        {formatDate(log.created_at)}
-                      </TableCell>
-                      <TableCell>
-                        <code className="text-xs bg-[var(--surf2)] px-1.5 py-0.5 rounded">
-                          {log.model_name || "—"}
-                        </code>
-                      </TableCell>
-                      <TableCell className="text-right font-mono">
-                        {formatTokens(log.prompt_tokens)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono">
-                        {formatTokens(log.completion_tokens)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono">
-                        {formatQuota(log.quota)}
-                      </TableCell>
-                      <TableCell className="max-w-[120px] truncate">
-                        {log.token_name || "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {/* Pagination */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <div className="text-sm text-[var(--mut)]">
-                  Trang {currentPage} / {totalPages}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={hasPrev ? `/logs?page=${currentPage - 1}` : "#"}
-                    className={cn(
-                      buttonVariants({ variant: "outline", size: "sm" }),
-                      !hasPrev && "pointer-events-none opacity-50",
-                    )}
-                    aria-disabled={!hasPrev}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Trước
-                  </Link>
-                  <Link
-                    href={hasNext ? `/logs?page=${currentPage + 1}` : "#"}
-                    className={cn(
-                      buttonVariants({ variant: "outline", size: "sm" }),
-                      !hasNext && "pointer-events-none opacity-50",
-                    )}
-                    aria-disabled={!hasNext}
-                  >
-                    Sau
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+            <div className="flex items-center gap-2">
+              <Link
+                href={hasPrev ? `/logs?page=${currentPage - 1}` : "#"}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  !hasPrev && "pointer-events-none opacity-50",
+                )}
+                aria-disabled={!hasPrev}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Trước
+              </Link>
+              <Link
+                href={hasNext ? `/logs?page=${currentPage + 1}` : "#"}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  !hasNext && "pointer-events-none opacity-50",
+                )}
+                aria-disabled={!hasNext}
+              >
+                Sau
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

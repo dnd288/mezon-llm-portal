@@ -83,6 +83,14 @@ export default async function PortalLayout({
               <span className="font-semibold">Mezon LLM</span>
             </Link>
           </div>
+          <nav className="flex items-center gap-4">
+            <Link
+              href="/models"
+              className="text-[13px] font-medium text-[var(--mut)] transition-colors hover:text-[var(--tx)]"
+            >
+              Bảng giá
+            </Link>
+          </nav>
         </header>
 
         <main className="flex-1 p-4 md:p-6">{children}</main>

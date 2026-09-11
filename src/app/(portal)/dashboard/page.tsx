@@ -5,9 +5,9 @@ import { getSelf } from "@/lib/api";
 import { formatQuota } from "@/lib/quota";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { VoucherDialog } from "@/components/voucher-dialog";
+import { UsageStats } from "@/components/usage-stats";
 import { cn } from "@/lib/utils";
 import {
   KeyRound,
@@ -87,7 +87,7 @@ export default async function DashboardPage() {
   const requestCount = user?.request_count;
 
   return (
-    <div className="space-y-[22px] p-4 md:p-6">
+    <div className="flex flex-col gap-6">
       {!user && (
         <div className="flex gap-2.5 rounded-[var(--rs)] border border-[color-mix(in_oklab,var(--warn)_32%,transparent)] bg-[color-mix(in_oklab,var(--warn)_12%,transparent)] p-3.5 text-[var(--warn)]">
           <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
@@ -97,54 +97,32 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-[22px] font-bold tracking-[-0.015em] text-[var(--tx)]">
+          <h1 className="text-[22px] font-bold tracking-[-0.015em]">
             Xin chào, {user?.display_name || session.username}!
           </h1>
-          <p className="mt-1 text-[13.5px] text-[var(--mut)]">
+          <p className="mt-1 text-[13px] text-[var(--mut)]">
             Tổng quan tài khoản và thống kê sử dụng.
           </p>
         </div>
         <VoucherDialog />
       </div>
 
-      <div className="grid gap-3.5 lg:grid-cols-[1.4fr_1fr_1fr]">
+      <div className="grid gap-3.5 lg:grid-cols-[1.4fr_1fr]">
         <section className="overflow-hidden rounded-[var(--r)] bg-brand-gradient p-5 text-white shadow-brand-glow">
           <p className="text-xs font-semibold tracking-[0.08em] uppercase opacity-85">Số dư khả dụng</p>
           <p className="mt-2 text-[38px] leading-none font-extrabold tracking-[-0.03em]">
             {quota === undefined ? "—" : formatQuota(quota)}
           </p>
           <p className="mt-1 font-mono text-[13px] opacity-90">mzđ · Mezon Đồng</p>
-          {quota !== undefined && (
-            <>
-              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/30">
-                <div className="h-full w-[72%] rounded-full bg-white" />
-              </div>
-              <p className="mt-2 text-[11.5px] opacity-90">Đã dùng 28% hạn mức tháng này</p>
-            </>
-          )}
         </section>
 
-        <Card className="bg-[var(--surf2)] shadow-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold tracking-[0.08em] uppercase text-[var(--mut)]">Đã sử dụng</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-[30px] leading-none font-bold tracking-[-0.02em]">{usedQuota === undefined ? "—" : formatQuota(usedQuota)}</p>
-            <p className="mt-2 font-mono text-[12.5px] text-[var(--mut)]">mzđ</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[var(--surf2)] shadow-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold tracking-[0.08em] uppercase text-[var(--mut)]">Tổng request</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-[30px] leading-none font-bold tracking-[-0.02em]">{requestCount === undefined ? "—" : requestCount.toLocaleString()}</p>
-            <p className="mt-2 text-[12.5px] text-[var(--mut)]">lượt gọi API · nhóm <Badge variant="secondary">{user?.group || "default"}</Badge></p>
-          </CardContent>
-        </Card>
+        <UsageStats
+          initialUsedQuota={usedQuota}
+          initialRequestCount={requestCount}
+          group={user?.group}
+        />
       </div>
 
       <Card>

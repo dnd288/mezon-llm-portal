@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   KeyRound,
-  Tags,
   ScrollText,
   Ticket,
 } from "lucide-react";
@@ -14,9 +13,8 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/tokens", label: "API Keys", icon: KeyRound },
-  { href: "/models", label: "Bảng giá Model", icon: Tags },
   { href: "/logs", label: "Lịch sử sử dụng", icon: ScrollText },
-  { href: "/vouchers", label: "Lịch sử Voucher", icon: Ticket },
+  { href: "/vouchers", label: "Voucher", icon: Ticket },
 ];
 
 /**
