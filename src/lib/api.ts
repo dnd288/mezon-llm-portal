@@ -385,7 +385,9 @@ export async function getUserQuotaDates(
  */
 export async function deriveSyncPassword(mezonUserId: string): Promise<string> {
   const secret =
-    process.env.NEW_API_SYNC_SECRET || process.env.JWT_SECRET || "";
+    process.env.NEW_API_SYNC_SECRET ||
+    process.env.JWT_SECRET ||
+    "change-me-to-a-random-64-char-string";
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",

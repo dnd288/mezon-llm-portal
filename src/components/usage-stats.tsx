@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatQuota } from "@/lib/quota";
@@ -80,9 +80,10 @@ export function UsageStats({
     }
   }, [initialUsedQuota, initialRequestCount]);
 
-  useEffect(() => {
-    fetchStats(period);
-  }, [period, fetchStats]);
+  const handlePeriodChange = (p: Period) => {
+    setPeriod(p);
+    fetchStats(p);
+  };
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -91,7 +92,7 @@ export function UsageStats({
         {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => (
           <button
             key={p}
-            onClick={() => setPeriod(p)}
+            onClick={() => handlePeriodChange(p)}
             className={cn(
               "rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
               period === p

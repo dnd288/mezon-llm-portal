@@ -71,7 +71,7 @@ function UptimeTimeline({ series }: { series: ModelPricingItem["uptimeSeries"] }
   for (const point of series ?? []) {
     points[Math.floor(point.ts / 3600)] = point.successRate;
   }
-  const currentHour = Math.floor(Date.now() / 3_600_000);
+  const [currentHour] = useState(() => Math.floor(Date.now() / 3_600_000));
   const hours = Array.from({ length: 24 }, (_, index) => currentHour - 23 + index);
   const average = series?.length
     ? series.reduce((total, point) => total + point.successRate, 0) / series.length
@@ -145,7 +145,7 @@ export function ModelPricingGrid({ models }: { models: ModelPricingItem[] }) {
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Tìm model…"
+          placeholder="Tìm model, tìm kiếm mô hình…"
           className="h-11 rounded-full pr-4 pl-10"
         />
       </label>
