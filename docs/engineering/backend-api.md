@@ -16,7 +16,7 @@ What `src/lib/api.ts` consumes. Base URL: `NEW_API_BASE_URL` (default `https://l
 
 | Function | Endpoint | Notes |
 |---|---|---|
-| `getTokens` | `GET /api/token/` | `Token[]`: id, name, status, remain_quota, unlimited_quota, expired_time, created_time, accessed_time |
+| `getTokens` | `GET /api/token/?page_size=100` | **Paginated envelope**: backend returns `{data: {items, page, page_size, total}}`; `api.ts` unwraps to `Token[]` via `res.data?.items ?? []` |
 | `createToken` | `POST /api/token/` | payload: name, expired_time, remain_quota, unlimited_quota |
 | `deleteToken` | `DELETE /api/token/:id` | revoke |
 | `getTokenKey` | `POST /api/token/:id/key` | returns raw `sk-...`; requested by the creation dialog immediately after creation |
@@ -28,16 +28,16 @@ Status semantics (portal rendering): `1` = Active; otherwise Revoked; `expired_t
 | Function | Endpoint | Notes |
 |---|---|---|
 | `redeemVoucher` | `POST /api/user/topup` | `{key}`; returns backend `message` plus granted `quota` |
-| `getUserTopUps` | `GET /api/user/topup/self` | `TopUpRecord[]`: id, amount, money, trade_no, status, create_time |
+| `getUserTopUps` | `GET /api/user/topup/self?page_size=100` | **Paginated envelope**: `{data: {items, total}}`; unwraps to `TopUpRecord[]`. Note: voucher redemptions do NOT create TopUp records — they only write `LogTypeTopup` log entries. This function returns payment top-ups only. |
 
 ## Usage logs
 
 | Function | Endpoint | Notes |
 |---|---|---|
-| `getUserLogs` | `GET /api/log/self?p=&size=` | `LogsResponse`: `{data: LogEntry[], total}`; p is 0-indexed; page size 20 (FR-5.1) |
-| `getUserLogsStat` | `GET /api/log/self/stat` | aggregate stats (currently unused by pages) |
+| `getUserLogs` | `GET /api/log/self?p=&size=&type=&start_timestamp=&end_timestamp=` | **Paginated envelope**: `{data: {items, total}}`; unwraps to `LogsResponse {data: LogEntry[], total}`. `p` is 1-indexed (api.ts converts 0-indexed page param). Optional `type` filter (1=topup, 2=consume). Optional time range filters. |
+| `getUserLogsStat` | `GET /api/log/self/stat?type=&start_timestamp=&end_timestamp=` | `UserLogsStat {quota, rpm, tpm}`; used by dashboard `UsageStats` component for time-filtered usage display |
 
-`LogEntry`: created_at, model_name, prompt_tokens, completion_tokens, quota, elapsed_time.
+`LogEntry`: created_at, model_name, prompt_tokens, completion_tokens, quota, use_time (total elapsed seconds), token_name.
 
 ## Models / pricing (public, no token)
 
@@ -64,6 +64,7 @@ Price derivation (models page): for `quota_type: 0`, mzđ per 1M tokens = `model
 | `/api/portal/tokens/[id]` | DELETE / POST | deleteToken / getTokenKey |
 | `/api/portal/logs` | GET | getUserLogs |
 | `/api/portal/voucher` | POST | redeemVoucher |
+| `/api/portal/stats` | GET | getUserLogsStat + getUserLogs (type=consume, size=1 for count); accepts `start`/`end` timestamp query params; returns `{usedQuota, requestCount}` |
 
 Routes return `{success, data}` / `{success, error}`. Missing sessions return 401; malformed portal input returns 400; upstream failure is normally 502, except logs currently return 500.
 

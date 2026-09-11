@@ -26,8 +26,8 @@
 | **Dashboard** | Số dư quota, thống kê sử dụng, nhập voucher, hướng dẫn cài đặt cho Claude Code / OpenCode / OMP / Cursor / Hermes |
 | **Quản lý API Key** | Tạo / xem / thu hồi API key (`sk-...`), hiển thị key một lần duy nhất với nút Copy |
 | **Bảng giá Model** | Tìm kiếm model theo tên, trạng thái sức khỏe (Ổn định / Chập chờn / Lỗi), giá mzđ / 1M token, nhóm truy cập |
-| **Lịch sử sử dụng** | Bảng log chi tiết: model, token in/out, quota, thời gian |
-| **Lịch sử Voucher** | Lịch sử nạp voucher / redemption code |
+| **Lịch sử sử dụng** | Bảng log chi tiết: model, key, token in/out, fee, total time |
+| **Voucher** | Nhập voucher nạp quota, xem lịch sử nạp (từ log backend) |
 
 ## Tech Stack
 
@@ -105,15 +105,18 @@ src/
 │   │   ├── dashboard/page.tsx      # Dashboard
 │   │   ├── tokens/page.tsx         # Quản lý API Key
 │   │   ├── logs/page.tsx           # Lịch sử sử dụng
-│   │   └── vouchers/page.tsx       # Lịch sử voucher
+│   │   └── vouchers/page.tsx       # Voucher + lịch sử nạp từ logs
 │   └── api/
 │       ├── auth/                   # Mezon OAuth routes (login, callback, session, logout)
-│       └── portal/                 # Backend proxy routes (tokens, logs, voucher)
+│       └── portal/                 # Backend proxy routes (tokens, logs, voucher, stats)
 ├── components/
 │   ├── ui/                         # shadcn/ui components
+│   ├── page-header.tsx             # Header chung cho portal pages
+│   ├── usage-stats.tsx             # Dashboard stats filter (hôm nay/tuần/tháng/toàn bộ)
+│   ├── portal-nav.tsx              # Sidebar navigation
 │   ├── create-token-dialog.tsx     # Dialog tạo API key
 │   ├── voucher-dialog.tsx          # Dialog nhập voucher
-│   ├── delete-token-button.tsx    # Nút thu hồi API key
+│   ├── delete-token-button.tsx     # Nút thu hồi API key
 │   └── mobile-nav.tsx              # Nav responsive
 ├── lib/
 │   ├── api.ts                      # Client gọi mezon-llm backend

@@ -16,9 +16,9 @@ date: 2026-09-10T12:39:34Z
 
 | Project screen | Repo files |
 |---|---|
-| Foundations / Component kit | src/app/globals.css, src/app/layout.tsx |
+| Foundations / Component kit | src/app/globals.css, src/app/layout.tsx, src/components/page-header.tsx |
 | Landing | src/app/page.tsx |
-| Dashboard | src/app/(portal)/dashboard/page.tsx, src/app/(portal)/layout.tsx, src/components/voucher-dialog.tsx |
+| Dashboard | src/app/(portal)/dashboard/page.tsx, src/app/(portal)/layout.tsx, src/components/voucher-dialog.tsx, src/components/usage-stats.tsx |
 | API Keys + create dialog | src/app/(portal)/tokens/page.tsx, src/components/create-token-dialog.tsx |
 | Usage logs | src/app/(portal)/logs/page.tsx |
 | Vouchers | src/app/(portal)/vouchers/page.tsx |

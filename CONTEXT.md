@@ -112,9 +112,9 @@ Related: `src/app/(portal)/logs/`, `docs/product/prd.md` (FR-5), `docs/engineeri
 
 ### Voucher / Redemption Code
 
-Definition: A one-time-use code that adds quota to a user's account. Created by admins in the new-api backend.
+Definition: A one-time-use code that adds quota to a user's account. Created by admins in the new-api backend. User-facing history is currently read from `LogTypeTopup` log entries because voucher redemption does not create `TopUp` records.
 
-Use when: The voucher input dialog, voucher history page, or top-up API.
+Use when: The voucher input dialog, voucher/top-up history page, or redeem API.
 
 Do not use for: Subscription plans, payment transactions, or affiliate codes.
 
@@ -140,7 +140,7 @@ Do not use for: A chat room, communication channel, or Discord channel.
 
 ### Session
 
-Definition: A JWT stored in an httpOnly cookie (`session`) after Mezon OAuth login. Contains userId, accessToken, username, mezonUserId.
+Definition: A JWT stored in an httpOnly cookie (`session`) after Mezon OAuth login. Contains `userId`, Mezon OAuth `accessToken`, new-api `backendAccessToken`, `backendExpiresAt`, `username`, and `mezonUserId`.
 
 Use when: Authentication flow, middleware guards, API route authorization.
 
