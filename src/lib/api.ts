@@ -1,5 +1,3 @@
-import crypto from "node:crypto";
-
 /**
  * API client for the Mezon LLM (new-api) backend.
  *
@@ -385,13 +383,27 @@ export async function getUserQuotaDates(
  * a server-only secret), so it can always mint a backend login session for
  * a synced user.
  */
-export function deriveSyncPassword(mezonUserId: string): string {
+export async function deriveSyncPassword(mezonUserId: string): Promise<string> {
   const secret =
-    process.env.NEW_API_SYNC_SECRET || process.env.JWT_SECRET || "";
-  return crypto
-    .createHmac("sha256", secret)
-    .update(mezonUserId)
-    .digest("hex");
+    process.env.NEW_API_SYNC_SECRET ||
+    process.env.JWT_SECRET ||
+    "change-me-to-a-random-64-char-string";
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(mezonUserId),
+  );
+  return [...new Uint8Array(signature)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /**

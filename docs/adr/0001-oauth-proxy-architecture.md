@@ -12,13 +12,13 @@ The product ships one login users already have — Mezon — and must present ne
 - The portal is frontend-only (Next.js App Router); no server-side data store of our own.
 
 ## Decision
-1. **Auth**: Mezon OAuth 2.0 authorization-code flow (`scope="openid offline"`, `state` cookie check). On callback, exchange code → userinfo, sync the user into new-api via the admin token (search, else create), then issue a `jose` HS256 JWT in an httpOnly cookie carrying `{userId, accessToken (Mezon OAuth), username, mezonUserId}`.
+1. **Auth**: Mezon OAuth 2.0 authorization-code flow (`scope="openid offline"`, `state` cookie check). On callback, exchange code → userinfo, sync the user into new-api via the admin token (search, else create), mint a new-api login session with the deterministic sync password, then issue a `jose` HS256 JWT in an httpOnly cookie carrying `{userId, accessToken (Mezon OAuth), backendAccessToken (new-api), backendExpiresAt, username, mezonUserId}`.
 2. **Data plane**: every new-api call flows through `src/lib/api.ts`, invoked from Server Components (reads) or `/api/portal/*` API routes (mutations). The browser never calls new-api and never imports `api.ts`.
 3. **State**: server is the source of truth; no client store, no cache layer. Mutations refresh or reload the page after completion.
 
 ## Consequences
 
-- The session JWT embeds the Mezon OAuth access token used for user-scoped new-api calls. Its upstream expiry is not tracked here; session lifetime (24h default) governs.
+- The session JWT embeds both the Mezon OAuth access token (for userinfo) and a new-api `backendAccessToken` (minted via deterministic login at callback time) used for all user-scoped new-api calls. The backend session's expiry (`backendExpiresAt`) is not actively refreshed; if it expires before the portal cookie, affected calls fail softly or 401 — re-login mints a fresh one.
 - Middleware gates on cookie presence only; signature verification happens in layout/pages via `getSession()` — fast edge, authoritative origin.
 - Any new-api behavior change (response shapes, endpoint moves) lands in `api.ts` and is fixed in one place, but is not caught by any test today (OQ1).
 - User provisioning is happy-path only: an existing new-api account not linked to a Mezon identity is invisible to the search (keyword = mezon user id).

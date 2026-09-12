@@ -25,7 +25,7 @@ Two external systems, one rule: **all new-api traffic goes through `src/lib/api.
 |---|---|---|
 | Public pages | `src/app/page.tsx`, `src/app/models/`, `src/app/login/` | Server Components; pricing fetches public endpoints, no session required |
 | Portal pages | `src/app/(portal)/**` | Server Components; layout guards session, pages call `src/lib/api.ts` with the session's access token |
-| Client islands | `src/components/*` (dialog, delete button, mobile nav, portal nav, model pricing grid) | `'use client'`; interaction only — receive data via props, mutate via `/api/portal/*` fetch, never import `src/lib/api.ts` |
+| Client islands | `src/components/*` (dialogs, delete button, mobile nav, portal nav, usage stats, model pricing grid) | `'use client'`; interaction only — receive data via props, mutate via `/api/portal/*` fetch, never import `src/lib/api.ts` |
 | API routes | `src/app/api/auth/*`, `src/app/api/portal/*` | Transport adapters: session check → validate input → call `src/lib/api.ts` → `{success, data|error}` JSON |
 | Middleware | `src/middleware.ts` | Cookie-presence gate for protected prefixes; redirect to `/login` with `callbackUrl` |
 

@@ -155,7 +155,7 @@ The design is authored dark-first. Light mode redefines only the token values �
 
 ### Bilingual copy
 
-Primary copy is Vietnamese; technical labels (model IDs, HTTP methods, field names) stay in English. Screen titles use both: "Nền tảng · Foundations", "Lịch sử sử dụng & Voucher".
+Primary UI copy is Vietnamese; technical labels (model IDs, HTTP methods, field names) stay in English. Some public/design document headings use bilingual labels for orientation, but shipped app screens should prefer concise Vietnamese titles.
 
 ### Gradient discipline
 
@@ -173,14 +173,13 @@ Each model pricing card shows:
 - Health status badge (Ổn định / Chập chờn / Lỗi), derived from the gateway's live success rate; "Không khả dụng" when the probe reports the model down
 - Input and output price in mzđ / 1M tokens
 - Access group (first enabled group, e.g. "default")
-- Measured latency from the health probe. Uptime sparklines and TPS are design candidates only — the backend does not expose them, so the page never fabricates them.
+- Measured latency from the health probe and performance metrics. Uptime sparklines are rendered from the performance-metrics endpoint's `recent_success_series` when available; empty buckets show neutral dots.
 
 ### Graceful degradation (FR-3.3)
 
 When the backend is unreachable, the dashboard degrades to:
 - Warning banner in `--warn` tint
 - Stat cards show "—" instead of numbers
-- Skeleton pulse animation for content areas
 - Page remains navigable
 
 ## Brand assets

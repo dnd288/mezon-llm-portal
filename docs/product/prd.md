@@ -39,7 +39,7 @@ Mezon LLM Portal is the customer portal for [Mezon LLM](https://llm.mrdnd.dev), 
 
 ### FR-3 Dashboard (authenticated)
 
-- **FR-3.1** The dashboard SHALL display current quota balance (quota units + USD), lifetime used quota, and lifetime request count.
+- **FR-3.1** The dashboard SHALL display current quota balance, used quota, and request count. Usage stats SHALL support filters for today, current week, current month, and all time.
 - **FR-3.2** The dashboard SHALL provide voucher redemption inline (dialog) and setup instructions for supported coding tools.
 - **FR-3.3** When the backend is unreachable the dashboard SHALL degrade to zeros with the rest of the page intact, not error out.
 
@@ -58,7 +58,7 @@ Mezon LLM Portal is the customer portal for [Mezon LLM](https://llm.mrdnd.dev), 
 ### FR-6 Voucher redemption & history
 
 - **FR-6.1** The user SHALL redeem a voucher code from the dashboard or vouchers page; invalid/used codes SHALL surface the backend's error message.
-- **FR-6.2** The vouchers page SHALL list redemption history newest-first with status badges and amounts.
+- **FR-6.2** The vouchers page SHALL list top-up history (sourced from backend log entries of type `LogTypeTopup`) newest-first, with parsed Vietnamese labels and credited quota amounts.
 - **FR-6.3** Successful redemption SHALL refresh the portal so current quota and history can update.
 
 ### FR-7 Session utilities
@@ -90,7 +90,7 @@ Mezon LLM Portal is the customer portal for [Mezon LLM](https://llm.mrdnd.dev), 
 |---|---|
 | FR-1, FR-7 | `src/app/api/auth/*`, `src/lib/auth.ts`, `src/middleware.ts` |
 | FR-2 | `src/app/page.tsx`, `src/app/models/page.tsx` |
-| FR-3 | `src/app/(portal)/dashboard/page.tsx`, `src/components/voucher-dialog.tsx` |
+| FR-3 | `src/app/(portal)/dashboard/page.tsx`, `src/components/voucher-dialog.tsx`, `src/components/usage-stats.tsx`, `src/app/api/portal/stats/route.ts` |
 | FR-4 | `src/app/(portal)/tokens/page.tsx`, `src/components/create-token-dialog.tsx`, `src/app/api/portal/tokens/**` |
 | FR-5 | `src/app/(portal)/logs/page.tsx`, `src/app/api/portal/logs/route.ts` |
 | FR-6 | `src/app/(portal)/vouchers/page.tsx`, `src/app/api/portal/voucher/route.ts` |

@@ -1,6 +1,6 @@
 # Testing & validation
 
-Current honest state: **no test suite**. The only automated gate is static.
+Current state: **Vitest (Unit/Integration) + Playwright (E2E Browser)** test suites are active.
 
 ## Commands
 
@@ -8,29 +8,40 @@ Current honest state: **no test suite**. The only automated gate is static.
 |---|---|
 | `bun run typecheck` | TypeScript compiles (`tsc --noEmit`) |
 | `bun run lint` | ESLint (eslint-config-next) |
-| `bun run validate` | both — the ready check |
-| `bun run build` | production build succeeds |
+| `bun run test` | Vitest unit tests under `src/` (jsdom environment, fast) |
+| `bun run test:watch` | Vitest interactive watch mode |
+| `bun run test:e2e` | Playwright E2E browser tests under `e2e/` (Chromium desktop) |
+| `bun run test:e2e:ui` | Playwright interactive UI runner |
+| `bun run test:all` | Runs both Vitest and Playwright test suites |
+| `bun run validate` | `typecheck` + `lint` — static checks gate |
+| `bun run build` | Next.js production build succeeds |
 
-## What each change owes today
+## Test Suite Structure
+
+### 1. Unit & Logic Tests (`vitest.config.mts`)
+- Located in `src/**/*.{test,spec}.ts(x)`.
+- Runs with Vitest in `jsdom` environment with native tsconfig path alias `@/*` resolution.
+- Covers formatting utilities (`src/lib/quota.test.ts`), business logic, and helper functions.
+
+### 2. End-to-End Browser Tests (`playwright.config.ts`)
+- Located in `e2e/*.spec.ts`.
+- Automatically boots local dev server on port 3001 (`PORT=3001 bun run dev`) to avoid port 3000 collision with the backend `new-api` Docker container.
+- Covers:
+  - **Landing page** (`e2e/landing.spec.ts`): Hero text, brand logos, ecosystem cards, CTA navigation.
+  - **Public Models & Pricing** (`e2e/models.spec.ts`): Model catalog, pricing display, search input.
+  - **Auth Guard Middleware** (`e2e/auth-guard.spec.ts`): Unauthenticated redirects for `/dashboard`, `/tokens`, `/logs`, `/vouchers`.
+  - **Authenticated Portal** (`e2e/portal.spec.ts`): Sidebar user identity, navigation links, and redirects away from `/login`.
+
+### 3. Mezon OAuth Handling in Tests (`e2e/fixtures/auth.ts`)
+- To avoid flakiness, 2FA, rate limits, and external network dependencies, tests against protected portal pages use the `authedPage` fixture.
+- The fixture generates a signed JWT session cookie using the test environment's `JWT_SECRET` and injects it directly into the browser context via `context.addCookies()`.
+
+## What each change owes
 
 | Change type | Minimum proof |
 |---|---|
-| Pure styling / copy | `bun run validate` |
-| Server Component data flow | validate + `bun run build` + manual run against dev server (or a backend stub) |
-| Auth / session changes | validate + build + manual login/logout cycle; a security review pass per `AGENTS.md` |
-| API route / `api.ts` changes | validate + exercising the route with the dev server (`curl` with session cookie) |
-
-Manual verification against the real backend requires `.env.local` (see `.env.example`); pricing/login can be exercised with public endpoints alone.
-
-## Why there is no suite (OQ1)
-
-The baseline shipped UI-first with a single validation command. Adopting a stack (e.g. vitest + Playwright) is an open question with maintainer ownership — [`product/open-questions.md`](../product/open-questions.md) OQ1. Until answered:
-
-- New user-visible changes follow OpenSpec: scenarios are written as acceptance criteria even though no automated mode executes them; `verification.md` records exactly what ran and what did not.
-- Do **not** claim "tests pass" — state the commands actually run.
-
-## Rules that hold regardless
-
-- A check that did not run is a gap, not a pass; say so in the PR.
-- Any change touching auth, session, cookies, or secrets gets a security pass (see `AGENTS.md` boundaries; `mlp-security` skill).
-- E2E/browser tests, when adopted, prove FR-1 (login → protected route), FR-4 (key lifecycle), FR-6 (voucher redemption) first — the money paths.
+| Pure styling / copy | `bun run validate` + `bun run test:e2e` |
+| Utility / lib changes | `bun run test` + `bun run validate` |
+| Server Component data flow | `bun run test:all` + `bun run build` |
+| Auth / session changes | `bun run test:all` + security review per `AGENTS.md` |
+| API route / `api.ts` changes | `bun run test:all` |
