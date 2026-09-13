@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { defineBddConfig } from "playwright-bdd";
 import fs from "fs";
 
 // Load local environment variables (same as Next.js does)
@@ -14,8 +15,14 @@ const PORT = process.env.PORT || "3001";
 const MOCK_PORT = process.env.MOCK_PORT || "3099";
 const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || `http://localhost:${PORT}`;
 
+const testDir = defineBddConfig({
+  features: "e2e/features/**/*.feature",
+  steps: ["e2e/steps/**/*.ts"],
+  missingSteps: "fail-on-gen",
+});
+
 export default defineConfig({
-  testDir: "./e2e",
+  testDir,
   /* Run tests with controlled concurrency to prevent Next.js dev server contention */
   fullyParallel: false,
   workers: 1,
