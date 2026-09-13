@@ -22,6 +22,10 @@ playwright/.cache/
 /.next/
 /out/
 
+# opennext cloudflare
+/.open-next/
+/.wrangler/
+
 # production
 /build
 
@@ -39,6 +43,7 @@ yarn-error.log*
 # env files
 .env*
 !.env.example
+.dev.vars
 # vercel
 .vercel
 
