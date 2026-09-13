@@ -22,6 +22,7 @@ export function formatTokens(tokens: number): string {
 export function formatDate(timestamp: number): string {
   if (!timestamp) return "—";
   return new Date(timestamp * 1000).toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

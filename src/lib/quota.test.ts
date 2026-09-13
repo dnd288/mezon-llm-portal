@@ -57,10 +57,8 @@ describe("quota utilities", () => {
       expect(formatDate(0)).toBe("—");
     });
 
-    it("formats valid unix timestamp", () => {
-      const formatted = formatDate(1700000000);
-      expect(formatted).not.toBe("—");
-      expect(formatted.length).toBeGreaterThan(5);
+    it("formats valid unix timestamp in Vietnam timezone", () => {
+      expect(formatDate(1700000000)).toBe("05:13 15/11/2023");
     });
   });
 
