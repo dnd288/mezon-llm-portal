@@ -11,6 +11,16 @@
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
+	"vars": {
+		"MEZON_REDIRECT_URI": "https://mezon-llm.mrdnd.dev/api/auth/callback",
+		"MEZON_AUTH_URL": "https://oauth2.mezon.ai/oauth2/auth",
+		"MEZON_TOKEN_URL": "https://oauth2.mezon.ai/oauth2/token",
+		"MEZON_USERINFO_URL": "https://oauth2.mezon.ai/userinfo",
+		"NEW_API_BASE_URL": "https://llm.mrdnd.dev",
+		"SESSION_MAX_AGE": "86400",
+		"NEXT_PUBLIC_APP_URL": "https://mezon-llm.mrdnd.dev",
+		"NEXT_PUBLIC_APP_NAME": "Mezon LLM"
+	},
 	"services": [
 		{
 			// Self-reference service binding, the service name must match the worker name

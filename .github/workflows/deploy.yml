@@ -35,6 +35,24 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Sync Cloudflare secrets
+        run: |
+          printf '%s' "$MEZON_CLIENT_ID" | bunx wrangler secret put MEZON_CLIENT_ID
+          printf '%s' "$MEZON_CLIENT_SECRET" | bunx wrangler secret put MEZON_CLIENT_SECRET
+          printf '%s' "$NEW_API_ADMIN_TOKEN" | bunx wrangler secret put NEW_API_ADMIN_TOKEN
+          printf '%s' "$JWT_SECRET" | bunx wrangler secret put JWT_SECRET
+          if [ -n "$NEW_API_SYNC_SECRET" ]; then
+            printf '%s' "$NEW_API_SYNC_SECRET" | bunx wrangler secret put NEW_API_SYNC_SECRET
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          MEZON_CLIENT_ID: ${{ secrets.MEZON_CLIENT_ID }}
+          MEZON_CLIENT_SECRET: ${{ secrets.MEZON_CLIENT_SECRET }}
+          NEW_API_ADMIN_TOKEN: ${{ secrets.NEW_API_ADMIN_TOKEN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NEW_API_SYNC_SECRET: ${{ secrets.NEW_API_SYNC_SECRET }}
+
       - name: Build and deploy to Cloudflare Pages
         id: deploy
         run: bun run deploy
