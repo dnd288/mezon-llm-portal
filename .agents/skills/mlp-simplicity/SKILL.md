@@ -20,12 +20,12 @@ skill is how you apply them at authoring time. Do not restate them here; read th
 Two different mistakes wear the word "simple", and telling them apart is most of the job.
 
 - **Over-building** adds structure the problem did not ask for: an interface with one implementer, a
-  config option nobody sets, a flag with no removal condition, a layer that only forwards. It looks
-  like foresight. It is usually a guess about a future that has not arrived.
+ config option nobody sets, a flag with no removal condition, a layer that only forwards. It looks
+ like foresight. It is usually a guess about a future that has not arrived.
 - **Under-building** ships part of the problem and calls the rest out of scope: no empty state, no
-  error branch, no authorization check, no handling for the input the real caller will actually
-  pass. It looks like simplicity. It is an unfinished change, and the missing part becomes a defect
-  someone with less context pays for.
+ error branch, no authorization check, no handling for the input the real caller will actually
+ pass. It looks like simplicity. It is an unfinished change, and the missing part becomes a defect
+ someone with less context pays for.
 
 **The test for the non-lazy boundary:** does the code handle every input the real caller will pass —
 including the empty, the error, the unauthorized, the concurrent? If yes, it is simple. If no, it is
@@ -81,7 +81,7 @@ Route it there; do not let a paragraph of debt live as a comment.
 
 ## The accidental-complexity hunt list
 
-When auditing existing code — or your own change before you open it — these are the greppable
+When auditing existing code — or the change before you open it — these are the greppable
 signatures of a rung that was climbed without earning it. Each has a fixed answer.
 
 | Signature | How to find it | The move |
@@ -104,14 +104,14 @@ gate (`mlp-review`). It is not the full smell catalogue; that is `../refactor/re
 Naming these is better work than a plausible-looking minimal shape:
 
 - **Safety, money, permissions, migrations, crypto** — principle 2's stated reversal: here the
-  abstraction may need to exist *before* the duplication, because the invalid state must be
-  impossible, not merely unlikely. Under-building these is not simplicity, it is a defect class.
+ abstraction may need to exist *before* the duplication, because the invalid state must be
+ impossible, not merely unlikely. Under-building these is not simplicity, it is a defect class.
 - **The domain already has a stable boundary.** Abstracting on the first case is right when the shape
-  is not a guess — a well-known protocol, an established seam. Rung 5 on case one is justified by the
-  boundary, not by the count.
+ is not a guess — a well-known protocol, an established seam. Rung 5 on case one is justified by the
+ boundary, not by the count.
 - **The simplest local shape pushes complexity uphill.** A rung-1 inline that forces every caller to
-  know a historical accident (principle 1) is not simpler, it has moved the cost to more places.
-  Count the total structure, not the structure in this file.
+ know a historical accident (principle 1) is not simpler, it has moved the cost to more places.
+ Count the total structure, not the structure in this file.
 
 ## Before you finish
 
@@ -125,8 +125,8 @@ Naming these is better work than a plausible-looking minimal shape:
 
 - `../../docs/philosophy.md` — the five compound-engineering principles this skill applies.
 - [`mlp-refactor`](../refactor/SKILL.md) — the MEASURE → PIN → MOVE → PROVE → RECORD loop for removing
-  complexity that already exists, and the debt ledger a shortcut routes to.
+ complexity that already exists, and the debt ledger a shortcut routes to.
 - [`mlp-review`](../review/SKILL.md) — the over-engineering axis at the merge gate, and the
-  rationalizations table.
+ rationalizations table.
 - [`mlp-state-management`](../state-management/SKILL.md) — the placement ladder, which is this skill's
-  logic applied to where a value lives.
+ logic applied to where a value lives.

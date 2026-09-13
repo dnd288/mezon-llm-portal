@@ -1,6 +1,6 @@
 ---
 name: bugfix
-description: "The defect loop — inspect, debug, IMPACT, fix, verify. Load this when fixing any bug, investigating a failure, or deciding whether a defect needs a change folder at all. Also load it when a test is failing and the cause is not yet known, when a fix is ready and needs proving, or when writing report.md, diagnosis.md, flows.md or verification.md in a `mlp-bugfix` change. Owns the threshold that decides between a straight pull request and a bugfix change, the rule that the diagnosis carries its evidence, the impact pass that keeps a fix backward compatible, the run set a fix owes — the defect's own feature, the cross-cutting health slice, and whatever the impact named — and the RED-before-GREEN discipline. Routes to tdd for which test mode can observe which claim, test for bringing the stacks up, e2e for the feature file, your contribution guide for the pull-request rules, and your project architectural decisions for why the type exists."
+description: "The defect loop — inspect, debug, IMPACT, fix, verify. Load this when fixing any bug, investigating a failure, or deciding whether a defect needs a change folder at all. Also load it when a test is failing and the cause is not yet known, when a fix is ready and needs proving, or when writing report.md, diagnosis.md, flows.md or verification.md in a `mlp-bugfix` change. Owns the threshold that decides between a straight pull request and a bugfix change, the rule that the diagnosis carries its evidence, the impact pass that keeps a fix backward compatible, the run set a fix owes — the defect's own feature, the cross-cutting health slice, and whatever the impact named — and the RED-before-GREEN discipline. Routes to tdd for which test mode can observe which claim, test for bringing the stacks up, e2e for the feature file, CONTRIBUTING.md for the pull-request rules, and AGENTS.md for why the type exists."
 ---
 
 # Fixing a defect
@@ -17,14 +17,14 @@ the run set is where it is proven.
 ## First: does this need a change folder at all?
 
 **No, if the cause is obvious from the symptom.** A typo, a copy change, an off-by-one with a
-stack trace pointing straight at it — go straight to a pull request. `your contribution guide` says so
+stack trace pointing straight at it — go straight to a pull request. `CONTRIBUTING.md` says so
 and it stays true.
 
 **Yes, if the cause is not obvious.** That is precisely when the inspect and debug steps have
 something to record, and when skipping them produces a fix aimed at a guess.
 
 ```
-your change-tool new change fix-<short-name> --schema bugfix
+openspec new change fix-<short-name> --schema bugfix
 ```
 
 The test is not severity. A trivial-looking defect with a non-obvious cause needs the loop; a
@@ -51,7 +51,7 @@ If it reproduces intermittently, say how often. "Sometimes" is not a reproductio
 verified against an intermittent failure that happened not to occur is not verified.
 
 The artifacts are `report.md` → `diagnosis.md` → `flows.md` → `tasks.md` → `verification.md`, and
-the schema in your bugfix change schema is what asks for each.
+the schema in openspec/schemas/bugfix is what asks for each.
 
 ## Debug — `diagnosis.md`
 
@@ -90,14 +90,14 @@ number of concrete shapes:
 
 | What the fix touches | What is already relying on it |
 |---|---|
-| A response schema in your API contract package | your server framework drops every field the schema does not name, so **removing one is a silent 200 with the data gone**. A client on the previous release still asks for it — during a deploy both releases are live |
-| A your data layer migration | One per pull request, backward compatible, never an edit to an applied one. Say what runs against a database still at the previous migration |
+| A response schema in src/lib/api.ts | Next.js drops every field the schema does not name, so **removing one is a silent 200 with the data gone**. A client on the previous release still asks for it — during a deploy both releases are live |
+| A backend migration (new-api) | One per pull request, backward compatible, never an edit to an applied one. Say what runs against a database still at the previous migration |
 | A share link | A **capability token**, not a credential. Change how one is issued or read and every link already sent stops working — `mlp-security` owns the surface |
 | The session cookie's name, path or flags | Everybody signed in is signed out, and the hostname is shared with project's the external system application |
 | A contract enum, or a state name | The wire agreement. Both sides parse it, and the ones already persisted do not migrate themselves |
 | A shared **e2e step** in `steps/<domain>.steps.ts` | A step is a sentence, and **every feature that says that sentence changes meaning with it**. Grep `features/` for the sentence before editing the step |
-| A seeded row or a catalogue shape | The console flows and the sharing flows mutate one shared catalogue; `e2e/your agent instructions`'s five rules say why a name is not a key |
-| A your component library path primitive | Every composite that renders it, in both packages |
+| A seeded row or a catalogue shape | The console flows and the sharing flows mutate one shared catalogue; `e2e/AGENTS.md`'s five rules say why a name is not a key |
+| A src/components/ui primitive | Every composite that renders it, in both packages |
 
 **"Nothing else calls it" is a fine answer — once it has been looked for.** Write it down either
 way: this section is what chooses the run set below, and a fix whose impact was never mapped is a
@@ -105,7 +105,7 @@ fix verified against the symptom and nothing else.
 
 **If the safe fix is bigger than this change, say so rather than shrinking the fix to fit.** A
 conditional wrapped around the symptom to avoid touching a caller is the guarded-symptom failure
-the [golden rules](../../../your agent instructions#golden-rules) name, and the follow-up nobody opens is how it
+the [golden rules](../../../AGENTS.md#golden-rules) name, and the follow-up nobody opens is how it
 becomes permanent.
 
 ## Fix — `tasks.md`
@@ -131,7 +131,7 @@ broke an invariant. A failing pixel baseline means the render changed — open t
 deciding which. A guard that produces a false positive is a higher-priority bug than one that
 misses a case, but it is a *separate change*.
 
-**Remove the cause; do not add a branch around the symptom.** A fix that adds a conditional, a flag or a null check where the diagnosis named a wrong seam leaves the defect in place and adds a reader's obstacle on top — and the next occurrence gets a second branch. If the honest fix is too large for this change, say so in `diagnosis.md` and open the follow-up; a guarded symptom with no follow-up is permanent ([golden rules](../../../your agent instructions#golden-rules)).
+**Remove the cause; do not add a branch around the symptom.** A fix that adds a conditional, a flag or a null check where the diagnosis named a wrong seam leaves the defect in place and adds a reader's obstacle on top — and the next occurrence gets a second branch. If the honest fix is too large for this change, say so in `diagnosis.md` and open the follow-up; a guarded symptom with no follow-up is permanent ([golden rules](../../../AGENTS.md#golden-rules)).
 
 Keep it small. A bugfix that grows a feature is two changes, and the feature half has no
 specification.
@@ -154,19 +154,19 @@ section is a guess about coverage.
 
 | Owed | Run | Why this one |
 |---|---|---|
-| **always** | your validation command | lint, guards, typecheck, jsdom. The common path CI runs |
-| **always** | `cd e2e && pnpm test:e2e cross-cutting/` | **The health slice.** The application answers, a visitor with no session lands at the front door, sign-in creates a session that survives a reload, the cookie stays scoped to our prefix. 26 scenarios, the fastest useful slice in the suite — and if these are red, no other result in the run means anything |
-| **always** | `pnpm test:e2e defects/<symptom>` | The feature written in the Fix step. This is the regression, and it is the one that must go RED before it goes GREEN |
-| a component's appearance | your browser tests, plus the journeys that render it | jsdom cannot see geometry (`mlp-tdd`) |
+| **always** | bun run validate | lint, guards, typecheck, jsdom. The common path CI runs |
+| **always** | `cd e2e && bun run test:e2e cross-cutting/` | **The health slice.** The application answers, a visitor with no session lands at the front door, sign-in creates a session that survives a reload, the cookie stays scoped to our prefix. 26 scenarios, the fastest useful slice in the suite — and if these are red, no other result in the run means anything |
+| **always** | `bun run test:e2e defects/<symptom>` | The feature written in the Fix step. This is the regression, and it is the one that must go RED before it goes GREEN |
+| a component's appearance | bun run test:e2e, plus the journeys that render it | jsdom cannot see geometry (`mlp-tdd`) |
 | a route, a service or a response schema | the `journeys/` that call it | Every layer's own tests pass with the seam broken — that is the whole argument for the layer existing |
-| a permission, a role, a session or a cookie | `pnpm test:e2e roles/` | 11 scenarios over four roles: what each may and may not reach. Cheap, and the failure it catches is somebody seeing a surface that is not theirs |
-| the staff console | `pnpm test:e2e internal/` | Staff curation. No public user is affected, which is exactly why nobody notices |
+| a permission, a role, a session or a cookie | `bun run test:e2e roles/` | 11 scenarios over four roles: what each may and may not reach. Cheap, and the failure it catches is somebody seeing a surface that is not theirs |
+| the staff console | `bun run test:e2e internal/` | Staff curation. No public user is affected, which is exactly why nobody notices |
 | a migration | the slice above, against a database migrated from the **previous** release | Both releases are live during a deploy |
-| the assistant or a long-running pipeline | `pnpm test:e2e:external`; scenarios needing optional infrastructure require the relevant services | These are excluded from the default run, so the default run says nothing about them |
+| the assistant or a long-running pipeline | `bun run test:e2e:external`; scenarios needing optional infrastructure require the relevant services | These are excluded from the default run, so the default run says nothing about them |
 
 **Reseed before the run and select a slice, not the suite.** Leftovers do not look like leftovers —
 three curation flows that pass in 9.7s on a fresh database hung for their full 270s budget on a
-dirty one. The whole suite is CI's job behind the your CI label for e2e checks label; `e2e/README.md`'s *Running a
+dirty one. The whole suite is CI's job behind the CI label for e2e checks; `e2e/README.md`'s *Running a
 slice* is the reference and `mlp-test` owns bringing the stacks up.
 
 **A run that was started and killed is UNRUN.** One change had to record its end-to-end layer that
@@ -197,7 +197,7 @@ a gap, and the gap belongs in writing rather than in someone's memory.
 - [ ] `diagnosis.md` names the test that should have failed
 - [ ] `diagnosis.md` names what else depends on the thing being changed, and answers the backward-compatibility question — "nothing else calls it" counts, once it has been looked for
 - [ ] The failing test was written first and its RED output is in `verification.md`
-- [ ] your validation command green
+- [ ] bun run validate green
 - [ ] `cross-cutting/` green, and the defect's own `defects/<symptom>` feature RED then GREEN
 - [ ] Every slice the impact section named was run, or is listed as not run with the reason
 - [ ] `verification.md` names the selections that ran — not "e2e passed" — and states what is still not proven

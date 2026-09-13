@@ -11,7 +11,7 @@
 | Branch | `docs/<short-description>` — no issue number, work without one is allowed here |
 | Title | `chore(scope):` — no `—` suffix; all context goes in the body. Drop `docs(scope):` — `chore(scope):` covers everything non-feature. |
 | Issue link | None |
-| Proof | `your validation command` |
+| Proof | `bun run validate` |
 | Labels | `layer:docs` if pure docs, otherwise the workspace `layer:*` it touches |
 
 ## Template body fields
@@ -21,6 +21,6 @@ None required.
 ## Red flags
 
 - **Mixed scope** — a PR that addresses more than one issue, or more than one unrelated change. One issue = one PR.
-- A `deps` scope change with no `pnpm audit` output in the body
+- A `deps` scope change with no `bun audit` output in the body
 - A chore touching two workspaces — it may be two changes
 - No validation run

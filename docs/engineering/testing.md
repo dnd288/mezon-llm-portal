@@ -45,10 +45,22 @@ Current state: **Vitest (Unit/Integration) + Playwright (E2E Browser)** test sui
 
 ## What each change owes
 
-| Change type | Minimum proof |
-|---|---|
-| Pure styling / copy | `bun run validate` + `bun run test:e2e` |
-| Utility / lib changes | `bun run test` + `bun run validate` |
-| Server Component data flow | `bun run test:all` + `bun run build` |
-| Auth / session changes | `bun run test:all` + security review per `AGENTS.md` |
-| API route / `api.ts` changes | `bun run test:all` |
+| Change type | Minimum proof | Docs to update |
+|---|---|---|
+| Pure styling / copy | `bun run validate` | `docs/design/README.md` if a token or design rule changes; otherwise none, but state N/A explicitly |
+| Utility / lib changes | `bun run test` + `bun run validate` | `docs/` only if the utility's behaviour is documented there |
+| Server Component data flow | `bun run test:all` + `bun run build` + e2e slice covering the flow | `docs/engineering/architecture.md` if data flow changes |
+| Auth / session changes | `bun run test:all` + security review per `AGENTS.md` | `docs/engineering/authentication.md` + `docs/engineering/architecture.md` |
+| API route / `api.ts` changes | `bun run test:all` + e2e slice for the route | `docs/engineering/backend-api.md` |
+| User-visible behaviour (any FR) | above + the `e2e/features/*.feature` slice for the FR, recorded in `verification.md`; full suite on CI | `docs/product/prd.md` and any `docs/product/open-questions.md` gating it, plus the screen entry in `docs/design/README.md` if layout changes |
+
+### Docs sync gate
+
+If a change ships behaviour that any of `docs/`, `README.md`, `CONTEXT.md`, or `openspec/` describes in old terms, the doc must be updated in the same change. A review should block a PR whose diff touches a documented behaviour without a matching doc edit (or an explicit "N/A — no documented behaviour changes" in the PR body / `verification.md`).
+
+### E2E slice gate
+
+- **Slice over suite locally.** Each PR need only run the slice relevant to the changed FR(s). The slice name is the feature file or the tag: e.g. `bun run test:e2e e2e/features/tokens.feature`, or `bun run test:e2e --grep @tokens`.
+- **Record evidence.** In `openspec/changes/<id>/verification.md` or the PR body, state: which slice was run, what passed, what failed, and what was skipped and why. "Started and killed" is **unrun**.
+- **Full suite verifies on CI.** The `e2e` job in `.github/workflows/ci.yml` runs `bun run test:e2e` across all features. A green local slice does not absolve a red CI suite.
+- **Docs-only / copy-only changes** explicitly skip e2e — but must say so.

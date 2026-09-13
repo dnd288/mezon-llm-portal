@@ -12,7 +12,7 @@
 | Title | `docs(spec): <id>` — no `—` suffix; all context goes in the body |
 | Issue link | `Part of #N` — not `Closes`, because agreeing a contract is not finishing the work |
 | Branch line | `Branch: feature/<issue>-short-description` on its own line |
-| Proof | `pnpm exec openspec validate <id> --strict` |
+| Proof | `bunx openspec validate <id> --strict` |
 | Labels | `layer:docs` |
 
 ## Template body fields

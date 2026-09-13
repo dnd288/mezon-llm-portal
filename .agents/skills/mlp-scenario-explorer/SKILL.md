@@ -37,23 +37,23 @@ that exercise *different* behaviour, and stopping when the next case would exerc
 A case list with no decision attached to each case is a worry list. Each scenario is one of:
 
 - **Tested** — a test observes it. `mlp-tdd` turns it into a RED test first; `mlp-e2e` owns the journey-level
-  ones; `mlp-test` owns which mode can see it.
+ ones; `mlp-test` owns which mode can see it.
 - **Handled in code** — the behaviour exists and a test above proves it.
 - **Out of scope, on purpose** — written down and bounded, never silently dropped. "Concurrent
-  rename by two admins: not handled this change, single-admin assumption, revisit if teams ship"
-  is a decision (golden rule 5); an unmentioned gap is a bug waiting.
+ rename by two admins: not handled this change, single-admin assumption, revisit if teams ship"
+ is a decision (golden rule 5); an unmentioned gap is a bug waiting.
 
 ## Anchor the list in two places
 
 The case list is not a scratch note — it is a durable artefact, and it lives in **both**:
 
 1. **The spec, in the openspec change-folder.** The scenarios are the claim set the change is built
-   against and reviewed against — `mlp-review`'s correctness axis reads exactly this list, and a
-   scenario with no covering test is an unverified claim. `mlp-spec-workflow` owns the change folder and
-   where the scenarios sit in it.
+ against and reviewed against — `mlp-review`'s correctness axis reads exactly this list, and a
+ scenario with no covering test is an unverified claim. `mlp-spec-workflow` owns the change folder and
+ where the scenarios sit in it.
 2. **The pull request checklist.** A short "scenarios covered / deliberately out of scope" block in
-   the PR body so a reviewer sees the whole space and what was decided about each edge — not just the
-   diff. `mlp-pr` owns the PR shape; this is what fills its scenario section.
+ the PR body so a reviewer sees the whole space and what was decided about each edge — not just the
+ diff. `mlp-pr` owns the PR shape; this is what fills its scenario section.
 
 The two are the same list at different lifetimes: the spec is where it is agreed, the PR is where it
 is shown to have been honoured.
@@ -61,10 +61,10 @@ is shown to have been honoured.
 ## Red flags
 
 - A scenario on the list with neither a test nor an "out of scope" note — the one case guaranteed to
-  break.
+ break.
 - A requirement whose only case is the happy path, accepted as complete.
-- A bug in production that maps to a lens you never walked — add the lens to your defaults, not just
-  the one case.
+- A bug in production that maps to a lens you never walked — add the lens to the defaults, not just
+ the one case.
 - "We'll handle that edge later" with no record of the edge — later has no list to read.
 
 ## Before you finish
@@ -83,4 +83,4 @@ is shown to have been honoured.
 - [`mlp-review`](../review/SKILL.md) — the correctness axis that reads the scenario list as the claim set.
 - [`mlp-security`](../security/SKILL.md) — the adversarial lens, done properly.
 - [`mlp-simplicity`](../simplicity/SKILL.md) — the non-lazy boundary: handling every case the caller will
-  actually pass.
+ actually pass.

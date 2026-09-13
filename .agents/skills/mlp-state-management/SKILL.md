@@ -1,6 +1,6 @@
 ---
 name: state-management
-description: "project state and data-flow conventions — where every value lives, across the whole pipeline. Load this when deciding where a piece of state belongs (server, database, Server Action, URL, TanStack Query, Context, a Zustand store, props), when adding or reviewing a store, when the server→client seam needs a rule (memoized readers, per-mount seeding, parallel fetches), or when a store is being seeded from a client fetch (a page store, a feature store, the session store in your store package), when wiring a hook or a feature container to data, when a value arrives in the wrong place or a screen is not re-rendering after a mutation, or when questioning the layering of the app: the one-way data flow from externals (object storage, the queue, external systems) through the database and the API into the Next server, then down through routing and pages into features — context, stores, hooks — and finally props into your UI package and your component library. Also load it for separation-of-concerns and clean-architecture questions, for splitting an oversized screen into widgets and deciding whether their shared behaviour belongs in a screen store or a screen-local context, for zustand or context inside your UI package path, and for the anti-patterns your guard checks scan for. It complements app-development (the Next-side mechanics) and api-contract (the wire)."
+description: "project state and data-flow conventions — where every value lives, across the whole pipeline. Load this when deciding where a piece of state belongs (server, database, Server Action, URL, TanStack Query, Context, a Zustand store, props), when adding or reviewing a store, when the server→client seam needs a rule (memoized readers, per-mount seeding, parallel fetches), or when a store is being seeded from a client fetch (a page store, a feature store, the session store in screen-local state (no global store in this project)), when wiring a hook or a feature container to data, when a value arrives in the wrong place or a screen is not re-rendering after a mutation, or when questioning the layering of the app: the one-way data flow from externals (object storage, the queue, external systems) through the database and the API into the Next server, then down through routing and pages into features — context, stores, hooks — and finally props into src/components and src/components/ui. Also load it for separation-of-concerns and clean-architecture questions, for splitting an oversized screen into widgets and deciding whether their shared behaviour belongs in a screen store or a screen-local context, for zustand or context inside src/components, and for the anti-patterns bun run validate scan for. It complements app-development (the Next-side mechanics) and api-contract (the wire)."
 ---
 
 # project state and data flow
@@ -22,16 +22,16 @@ Ask in order; the first "yes" decides (state-and-data-flow.md `#the-one-rule`):
 
 1. **The database?** → Server Component reads it, Server Action mutates it, then **revalidate**.
 2. **A reload, a shared link or the back button reproducing it?** → **the URL** (read through an
-   allow-list; `?step=` is the template).
+ allow-list; `?step=` is the template).
 3. **Changes without the user acting?** → **TanStack Query** (today: the Generating screen's job
-   polling).
-4. **The signed-in identity?** → the **session store in `your store package`** (your project's architectural decisions) —
-   the one scoped reversal of your state-management decision, a projection of the server render.
+ polling).
+4. **The signed-in identity?** → `src/lib/auth.ts` session cookie (AGENTS.md) —
+ the one scoped reversal of AGENTS.md state placement rules decision, a projection of the server render.
 5. **Read widely, written almost never?** → **React Context** (locale, toasts).
 6. **Interaction confined to one screen, more than two related values?** → a **Zustand store in the
-   feature folder** — a page store. Never a global store. When the screen is a `your UI package` composite,
-   the feature folder is the screen's own folder in `your UI package path` and the store is a **screen
-   store** (below).
+ feature folder** — a page store. Never a global store. When the screen is a `src/components` composite,
+ the feature folder is the screen's own folder in `src/components` and the store is a **screen
+ store** (below).
 7. **Otherwise** → **props**, and the value probably belongs to the component above.
 
 **If a store would hold a copy of a database row, the answer was 1.** The one exception is the
@@ -52,9 +52,9 @@ state-and-data-flow.md `#the-server-client-seam`
 
 The session store is the template: server-resolved, passed as a prop, derived synchronously so the
 first client render agrees with the server render (no hydration mismatch). See
-your project's architectural decisions for the full contract.
+AGENTS.md for the full contract.
 
-**A store that fetches its own initial state is your session-state decision's reversal condition in the wild.** The store
+**A store that fetches its own initial state is src/lib/auth.ts session decision's reversal condition in the wild.** The store
 is a projection; it never has a second authority.
 
 ## One-way data flow
@@ -63,19 +63,19 @@ Data descends through the layers of `references/data-flow.md §2` — never up, 
 layer never reaches over a higher one for a value, and a component never fetches what a caller can
 pass. Change travels the other way: the agent acts, a Server Action mutates, `revalidatePath`
 re-derives the read side. The screen that receives props does not own the data's life cycle; that is
-what makes a pixel baseline able to assert the design (your project's architectural decisions).
+what makes a pixel baseline able to assert the design (AGENTS.md).
 
 ## The store contract
 
-A zustand store is a **vanilla factory** — the `your store package` shape: `createStore` from
+A zustand store is a **vanilla factory** — the `screen-local state (no global store in this project)` shape: `createStore` from
 `zustand/vanilla`, a `create*Store(initial)` factory, React bound separately in a hook file. That is
 what makes it unit-testable with no React. The guard check **`vanilla-store-factories`** enforces
 the mechanical half — a `*-store.ts` file stays a plain module, whichever kind of store it is:
 
 - it imports no React-bound `zustand` (the binding is `createStore` from `zustand/vanilla`), no
-  `react`, and carries no `'use client'` — the hook file owns all three;
+ `react`, and carries no `'use client'` — the hook file owns all three;
 - the check is bans-only by design: a session store or a storage client that is nothing to do with
-  zustand is simply untouched.
+ zustand is simply untouched.
 
 The store holds state and transitions; **routing is not the store's concern.** The wizard's
 `use-wizard-flow.ts` is the template: the store previews, the persist lands, and only then does the
@@ -88,35 +88,35 @@ on that object's identity re-runs when the URL has not moved. See
 state-and-data-flow.md `#the-url`, which owns
 the rule and the failure it prevents.
 
-## The composite rung — state inside `your UI package path`
+## The composite rung — state inside `src/components`
 
-Rung 6 assumed a feature folder in `your app path`. A `your UI package` screen has none, which for a long
+Rung 6 assumed a feature folder in `src/app`. A `src/components` screen has none, which for a long
 time left it exactly one answer — `useState`, in the screen — and thirteen of them in
-`result-screen.tsx` is what that produced. your project's architectural decisions
+`result-screen.tsx` is what that produced. AGENTS.md
 adds the rung; state-and-data-flow.md `#inside-a-composite`
 is the owning document. Ask in order:
 
 1. **Never leaves one widget?** → `useState` there, `useReducer` once three related values move
-   together. Nothing is lifted for tidiness.
+ together. Nothing is lifted for tidiness.
 2. **Two widgets must agree, no transitions, almost no writes?** → a **screen-local context**.
 3. **Two widgets must agree, with transitions — or one must subscribe to a field without
-   re-rendering on the others?** → a **screen store**: `<screen>-store.ts` beside the component,
-   `createStore` from `zustand/vanilla`, bound in `use-<screen>.ts`, provided by the screen.
-   The same vanilla-factory contract as every other store, so `vanilla-store-factories` covers it
-   unchanged.
+ re-rendering on the others?** → a **screen store**: `<screen>-store.ts` beside the component,
+ `createStore` from `zustand/vanilla`, bound in `use-<screen>.ts`, provided by the screen.
+ The same vanilla-factory contract as every other store, so `vanilla-store-factories` covers it
+ unchanged.
 4. **Otherwise** → props.
 
 Three constraints are what make this a carve-out rather than a hole in
-your project's architectural decisions:
+AGENTS.md:
 
 - **View state only** — which dialog is open, what it was opened for. A store holding a domain entity
-  or a server-side resource means the answer was rule 1, exactly as before.
+ or a server-side resource means the answer was rule 1, exactly as before.
 - **Seeded from props, per mount** — so a story still describes every state the screen can be in.
-- **Local by construction** — created by the screen, unreachable from outside it. `your store package`, an
-  `your app path` feature store and a query hook stay banned; `ui-stays-presentational` is unchanged
-  and still fails on them.
+- **Local by construction** — created by the screen, unreachable from outside it. `screen-local state (no global store in this project)`, an
+ `src/app` feature store and a query hook stay banned; `ui-stays-presentational` is unchanged
+ and still fails on them.
 
-**How you find out you needed it:** `your guard checks`'s `composite-complexity` budget — 24 props, 6
+**How you find out you needed it:** `bun run validate`'s `composite-complexity` budget — 24 props, 6
 stateful hooks, 800 code lines, complexity 45. A stateful-hook count over budget is a census of the
 widgets the screen has not been split into. `mlp-ui-development` §9 owns the split itself.
 
@@ -134,12 +134,12 @@ The error-handling architecture is a data-flow concern too: `state-and-data-flow
 owns it. The three lines that matter here:
 
 - **Classification happens where the typed error is visible** (the server fetch site), never in a
-  client `error.tsx` — Next serializes server-render errors, so the class never crosses.
+ client `error.tsx` — Next serializes server-render errors, so the class never crosses.
 - **A down API is not signed out** (`getSession` rethrows `ApiUnavailableError`; the portal gate
-  renders the unavailable state instead of redirecting) and not an empty wall (the wall page
-  classifies instead of soft-failing).
+ renders the unavailable state instead of redirecting) and not an empty wall (the wall page
+ classifies instead of soft-failing).
 - **Across a Server Action the classification is the `{ unavailable: true }` marker**
-  (`your app source pathlib/api-unavailable.ts`) — never a message to match.
+ (`the app source pathlib/api-unavailable.ts`) — never a message to match.
 
 When a screen "renders wrong when the API is down", the fix is at the fetch site, not in the
 boundary component.
@@ -148,7 +148,7 @@ boundary component.
 
 - `references/data-flow.md` — the layered pipeline, every layer's responsibility, the anti-pattern catalogue.
 - `docs/engineering/state-and-data-flow.md` — the
-  ladder and the directory map (owning document).
+ ladder and the directory map (owning document).
 - `mlp-app-development` §7a — the same ladder from the Next side, with the mechanics.
 - `mlp-api-contract` — the wire the values cross.
-- `your state-management decision`, your project's architectural decisions, your project's architectural decisions — the reasoning behind the rules.
+- AGENTS.md — the reasoning behind the rules.

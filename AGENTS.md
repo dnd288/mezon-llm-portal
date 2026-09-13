@@ -66,14 +66,14 @@ Task-specific procedure lives in skills. The CLI may generate this table from th
 
 Run the project's standard validation command before calling work ready. At minimum, a ready change should have passed:
 
-- Formatting, linting, and type checking
-- Repository guards and architectural invariant checks
-- Unit tests for changed logic
-- Component or browser tests for UI behaviour
-- Integration or end-to-end slices for changed user flows
-- Security checks for changes touching auth, authorization, secrets, uploads, webhooks, dependencies, or external input
+- **Formatting, linting, and type checking** — `bun run validate` (typecheck + lint)
+- **Unit tests for changed logic** — `bun run test` (vitest, jsdom)
+- **E2E slice for changed user flows** — `bun run test:e2e <slice>` — required if the change touches `src/app/**`, `src/components/**`, `src/lib/api.ts`, `src/middleware.ts`, or any `FR-*` from `docs/product/prd.md`. State which slice, the result, and what was skipped and why. The full suite is not expected locally; the slice must cover the change.
+- **Docs in sync** — if `docs/`, `README.md`, `CONTEXT.md`, `openspec/`, or `AGENTS.md` describe shipped behaviour that the change alters, update the doc in the same change. Do not leave "planned" language for shipped work. If docs are not relevant, say so explicitly.
+- **Guards & invariants** — run `bun run lint` and `bun run typecheck` (both part of `bun run validate`). No separate guard suite is wired yet; lint and typecheck are the automated floor.
+- **Security checks** — for changes touching auth, authorization, secrets, uploads, webhooks, dependencies, or external input, run the security review per `mlp-security`. CI runs Gitleaks and `npm-audit` on PRs (`.github/workflows/security.yml`).
 
-Do not claim a check passed unless you ran it. If a check could not run, say which one and why. Prefer the smallest test slice that proves the claim during development, then run the full required validation before PR.
+Do not claim a check passed unless you ran it. If a check could not run, say which one and why. Prefer the smallest test slice that proves the claim during development, then run the full required validation before PR. The canonical source of "done" for this project is this section; skills route here rather than restating the criteria.
 
 ## Boundaries
 

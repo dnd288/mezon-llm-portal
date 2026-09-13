@@ -1,6 +1,6 @@
 ---
 name: verify
-description: "The adversarial verification pass — prove a change satisfies its own specification, or prove it does not. Load this before marking any user-visible work ready, when a change's scenarios look green but nobody has challenged them, when a subagent's build needs checking against the change folder, or when asked to audit a change against its openspec spec. Owns the CLAIM → EXTRACT → DOUBT → RECONCILE → STOP cycle, which claims to extract from the change's specs, what counts as evidence (your testing documentation), and the three-round bound. Complements review: that reviews the change; this attacks it."
+description: "The adversarial verification pass — prove a change satisfies its own specification, or prove it does not. Load this before marking any user-visible work ready, when a change's scenarios look green but nobody has challenged them, when a subagent's build needs checking against the change folder, or when asked to audit a change against its openspec spec. Owns the CLAIM → EXTRACT → DOUBT → RECONCILE → STOP cycle, which claims to extract from the change's specs, what counts as evidence (docs/engineering/testing.md), and the three-round bound. Complements review: that reviews the change; this attacks it."
 ---
 
 # Verifying a change against its specification
@@ -20,7 +20,7 @@ variant takes its claim set from the change folder rather than from the author's
 ## The claim set: the specification
 
 In this repository the claims are not what you think you built — they are the change's
-your change tracking folder specs scenarios, written before the code, each one a
+openspec/changes specs scenarios, written before the code, each one a
 `#### Scenario:` with a WHEN and a THEN. A scenario is a claim that the system behaves a
 certain way. The spec is the contract; the change is the artifact.
 
@@ -44,7 +44,7 @@ For each scenario in the change's spec, write the claim compactly:
 ```
 CLAIM: "Sign in shows the floating-card layout below the large breakpoint and the 50/50 split above it"
 WHY THIS MATTERS: the responsive switch is the non-obvious part of this screen; a
-                  regression reads as a design decision.
+ regression reads as a design decision.
 ```
 
 If a claim cannot be written compactly, the scenario is vague — that is a finding about the
@@ -54,7 +54,7 @@ spec, and it goes back to the spec, not around it.
 
 The reviewer gets the artifact and the contract, not the journey. A scenario maps to the code
 that implements it, the test that covers it, and the pixel baseline that records it. Strip
-your reasoning — if you hand over conclusions you get back validation of your conclusions.
+the reasoning — if you hand over conclusions you get back validation of the conclusions.
 The unit must fit in one read; a scenario that needs a whole screen to verify is a scenario
 that should have been decomposed.
 
@@ -78,13 +78,13 @@ conclusion biases it toward agreement. The reviewer must independently decide wh
 artifact satisfies the contract. In Claude Code, a fresh-context reviewer is the mechanism;
 on any other agent, the same prompt to a fresh session.
 
-**What counts as evidence.** your testing documentation owns the answer, and it is stricter
+**What counts as evidence.** docs/engineering/testing.md owns the answer, and it is stricter
 than it looks: a jsdom unit test cannot measure layout (`assertHasLayout` throws there for
 exactly this reason); the browser modes exist to be used. A scenario about geometry is
-verified by a `*.quality.test.tsx`. A scenario about **design fidelity has no mechanical verifier** — the visual gate is retired (your project architectural decisions) — so it is verified by eye and the report must say that rather than pointing at a green browser run. A scenario about copy
+verified by a `*.quality.test.tsx`. A scenario about **design fidelity has no mechanical verifier** — the visual gate is retired (AGENTS.md) — so it is verified by eye and the report must say that rather than pointing at a green browser run. A scenario about copy
 is verified under the pseudo-locale, because that is the only render where unbracketed text
-on screen means hardcoded copy. Map the scenario to the mode that can actually observe it —
-the five modes (unit, stories, quality, pixel, visual) are in `mlp-tdd`.
+on screen means hardcoded copy. **A scenario about a docs claim** is verified by diffing `docs/` against the code change — if the spec ships behaviour the doc still describes in the old terms, the doc is stale. **An e2e scenario** is verified by the existence of a feature in `e2e/features/*.feature` and its steps in `e2e/steps/` that pass `bddgen` and the `playwright.config.ts` run. Map the scenario to the mode that can actually observe it —
+the five modes (unit, stories, quality, pixel, visual) plus e2e and doc review are in `mlp-tdd`.
 
 ### RECONCILE
 
@@ -94,7 +94,7 @@ The reviewer's output is data, not verdict. Classify each finding in precedence 
 2. **Valid and actionable** — a real gap. Fix it, re-loop.
 3. **Valid trade-off** — real but the fix costs more than the acceptance. Document it so the user sees it.
 4. **Noise** — correct under context the reviewer lacked. Note it, and ask whether the scenario
-   should have carried that context.
+ should have carried that context.
 
 A fresh reviewer can be wrong because it lacks context. Do not defer just because it is fresh.
 
@@ -139,4 +139,6 @@ stopped verifying.
 - [ ] Each claim got a fresh-context adversarial review with ARTIFACT + CONTRACT only
 - [ ] Findings were classified against the artifact, not rubber-stamped
 - [ ] Evidence matched the claim: the mode that can actually observe it
+- [ ] Each scenario has been cross-referenced against docs that describe the same behaviour
+- [ ] An e2e feature exists (or is explicitly noted as not yet needed) for each user-facing scenario
 - [ ] A stop condition was met — trivial findings, three cycles, or explicit ship
