@@ -19,7 +19,7 @@ jobs:
 
   deploy:
     name: Deploy to Cloudflare Pages
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: [ci]
     environment:
       name: prod
