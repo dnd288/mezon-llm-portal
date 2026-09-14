@@ -8,6 +8,7 @@
 | [`engineering/authentication.md`](engineering/authentication.md) | OAuth flow, session model, route protection, user sync |
 | [`engineering/backend-api.md`](engineering/backend-api.md) | new-api endpoints consumed by the portal, response shapes |
 | [`engineering/testing.md`](engineering/testing.md) | Test modes, validation commands, what CI proves |
+| [`../e2e/README.md`](../e2e/README.md) | E2E runbook — slices, mock backend, FR→feature mapping |
 | [`design/README.md`](design/README.md) | Design system — tokens, component kit, screen inventory, brand assets |
 | [`adr/`](adr/) | Architecture decision records, numbered |
 

@@ -48,13 +48,13 @@ Prefer the project's one-command local bootstrap if it exists. By hand, the orde
 ```sh
 nvm use || true
 corepack enable
-pnpm install
-cp .env.example .env          # fill required secrets; keep multiline secrets quoted
-pnpm local:up                 # database and local dependencies, if containers are used
-pnpm db:migrate
-pnpm db:seed                  # only what the app needs to let an operator sign in
-set -a; . ./.env; set +a      # export env for child processes
-pnpm dev --env-mode=loose     # or the project-specific equivalent
+bun install
+cp .env.example .env # fill required secrets; keep multiline secrets quoted
+not applicable — no containers in this repo # database and local dependencies, if containers are used
+bun db:migrate (not applicable — no DB in this repo)
+bun db:seed (not applicable — no DB in this repo) # only what the app needs to let an operator sign in
+set -a; . ./.env; set +a # export env for child processes
+bun run dev # or the project-specific equivalent
 ```
 
 Adjust package manager and commands to the repository. Preserve the ordering: dependencies, environment, infrastructure, migrations, seed/bootstrap, then long-running processes.

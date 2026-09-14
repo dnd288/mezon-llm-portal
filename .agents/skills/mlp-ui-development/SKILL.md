@@ -1,14 +1,14 @@
 ---
 name: ui-development
-description: "How to build a widget or a screen in your UI package — the project composite layer. Load this when creating or changing anything under your UI package source path: a TopBar, SideNav, AuthCard, SignInScreen, RoomPicker, UploadPanel, StyleGrid, ResultSlider, ShareSheet, or any arrangement that maps to a design frame. Also load it for feature folders, where a screen file goes, why a composite may not fetch or import next/*, how copy reaches a component from your i18n package, the pixel and visual comparison layers and the four-viewport matrix, composing from your component library without touching Base UI, and how to check a component against a design node id. Load it too whenever a screen has grown too big, too complex or untestable — splitting a screen into widgets, a component with too many props or too many useState calls, a screen store, zustand or context inside your UI package path, the composite-complexity and component-performance guard checks, prop groups, extracting a dialog, separation of concerns in a composite, or a component-length, complexity or render-performance budget. Defers to component-development for primitives in your component library and to design for every colour, size and token."
+description: "How to build a widget or a screen in src/components — the project composite layer. Load this when creating or changing anything under src/components source path: a TopBar, SideNav, AuthCard, SignInScreen, RoomPicker, UploadPanel, StyleGrid, ResultSlider, ShareSheet, or any arrangement that maps to a design frame. Also load it for feature folders, where a screen file goes, why a composite may not fetch or import next/*, how copy reaches a component from no i18n catalogue yet, the pixel and visual comparison layers and the four-viewport matrix, composing from src/components/ui without touching Base UI, and how to check a component against a design node id. Load it too whenever a screen has grown too big, too complex or untestable — splitting a screen into widgets, a component with too many props or too many useState calls, a screen store, zustand or context inside src/components, the composite-complexity and component-performance guard checks, prop groups, extracting a dialog, separation of concerns in a composite, or a component-length, complexity or render-performance budget. Defers to component-development for primitives in src/components/ui and to design for every colour, size and token."
 ---
 
 # Building an project composite
 
-`your component library` is generic — a `Button` is correct when it has the right variants and is accessible.
-`your UI package` is specific: **a composite is correct when it is indistinguishable from a design frame.**
+`src/components/ui` is generic — a `Button` is correct when it has the right variants and is accessible.
+`src/components` is specific: **a composite is correct when it is indistinguishable from a design frame.**
 That single difference drives everything below, and it is why this layer has pixel baselines and
-`your component library` does not (your project's architectural decisions).
+`src/components/ui` does not (AGENTS.md).
 
 `mlp-design` owns how it looks. `mlp-component-development` owns how a *primitive* is built. This
 file owns how a composite is assembled, and the ways that go wrong.
@@ -16,35 +16,35 @@ file owns how a composite is assembled, and the ways that go wrong.
 ## The sequence
 
 1. **Find the design node.** Screens and their node ids are in
-   `your resources pathfigma/manifest.json` — 14 screens,
-   desktop and mobile. `figma` has the read order; use the cheapest call that answers the
-   question.
-2. **Open the CSS style refs.** `your resources pathfigma/css/<screen>.{desktop,mobile}.css`
-   (see `figma/css/your README`). These are
-   the padding/gap/height/fill numbers to implement — not a sibling screen's defaults, and
-   not a guess from a PNG. If they are missing, capture them first (`figma-to-code`
-   Capture CSS phase) before coding layout.
-3. **Decide what already exists.** Every element is one of: an existing `your component library` primitive, a *new
-   variant* of one, a new primitive, another composite, or an **asset**. Only the last three are new
-   work, and a new primitive is `mlp-component-development`'s job, not this file's.
-4. **Place it.** `your UI package source path<feature>/<name>/<name>.tsx` — features are `shell`, `auth`,
-   `wizard`, `results`, `sharing`. **A screen goes inside its feature**, not in a top-level
-   `screens/`. Do not create a feature folder before it has a member.
-5. **Build it from `your component library`.** Never import `@base-ui/react` here — `your guard checks` fails the build.
-6. **Copy from `your i18n package`.** Never a literal.
+ `public/figma/manifest.json` — 14 screens,
+ desktop and mobile. `figma` has the read order; use the cheapest call that answers the
+ question.
+2. **Open the CSS style refs.** `public/figma/css/<screen>.{desktop,mobile}.css`
+ (see `figma/css/the README`). These are
+ the padding/gap/height/fill numbers to implement — not a sibling screen's defaults, and
+ not a guess from a PNG. If they are missing, capture them first (`figma-to-code`
+ Capture CSS phase) before coding layout.
+3. **Decide what already exists.** Every element is one of: an existing `src/components/ui` primitive, a *new
+ variant* of one, a new primitive, another composite, or an **asset**. Only the last three are new
+ work, and a new primitive is `mlp-component-development`'s job, not this file's.
+4. **Place it.** `src/components source path<feature>/<name>/<name>.tsx` — features are `shell`, `auth`,
+ `wizard`, `results`, `sharing`. **A screen goes inside its feature**, not in a top-level
+ `screens/`. Do not create a feature folder before it has a member.
+5. **Build it from `src/components/ui`.** Never import `@base-ui/react` here — `bun run validate` fails the build.
+6. **Copy from `no i18n catalogue yet`.** Never a literal.
 7. **Stories**, including a `PseudoLocale` story.
 8. **Unit test** for structure and the i18n contract, and **`<name>.quality.test.tsx`** for
-   geometry, tokens and states. That is the whole surface now — the pixel and visual layers
-   are retired (section 5).
-9. **Export from `your UI package source pathindex.ts`**, then `your validation command` — and because this is
-   the layer whose whole subject is appearance, **`your browser tests` as well**. CI does not
-   run the browser modes by default (your project's architectural decisions,
-   amended); a quality regression in `your UI package path` will not fail anything unless you
-   run it here or put the `browser-checks`, `e2e-checks`, or `deep-checks` label on the pull request.
+ geometry, tokens and states. That is the whole surface now — the pixel and visual layers
+ are retired (section 5).
+9. **Export from `src/components source pathindex.ts`**, then `bun run validate` — and because this is
+ the layer whose whole subject is appearance, **`bun run test:e2e` as well**. CI does not
+ run the browser modes by default (AGENTS.md,
+ amended); a quality regression in `src/components` will not fail anything unless you
+ run it here or put the `browser-checks`, `e2e-checks`, or `deep-checks` label on the pull request.
 
 ## 1. A composite is a pure function of its props and the catalogue
 
-No `next/*`. No `your API package`. No `your contract package`. No `your data layer`. No `fetch`. `your guard checks`'s
+No `next/*`. No direct backend calls. No `fetch`. Browser code reaches the backend only through `src/app/api/portal/*`. `bun run validate`'s
 `ui-stays-presentational` rule fails the build on any of them, in any file that is not a story or a
 test.
 
@@ -54,22 +54,22 @@ verification strategy rather than merely bending a convention.
 
 The pressure to break it is gradual and always sounds reasonable: the screen needs *just* the
 current user, so it needs a session, so it needs a fetch. When a composite genuinely needs data, a
-route in `your app path` fetches it and passes it down — that seam is `mlp-app-development`. **Move
+route in `src/app` fetches it and passes it down — that seam is `mlp-app-development`. **Move
 the component; do not relax the guard.**
 
 **A store reached in from OUTSIDE is the same violation wearing different clothes.**
-your project's architectural decisions puts a feature slice, a
-TanStack Query hook or an app Context read in `your app path`, never here — each of them is a way for
+AGENTS.md puts a feature slice, a
+TanStack Query hook or an app Context read in `src/app`, never here — each of them is a way for
 a component to acquire an appearance its props do not describe, which is exactly what the pixel
-baseline cannot then assert. The session store (your project's architectural decisions)
-is not this layer's exception either: an `your app path` leaf reads `useUser()` and passes the value
-down as a prop, and composites still never import `your store package`. `your guard checks`'s
+baseline cannot then assert. The session store (AGENTS.md)
+is not this layer's exception either: an `src/app` leaf reads `useUser()` and passes the value
+down as a prop, and composites still never import `screen-local state (no global store in this project)`. `bun run validate`'s
 `ui-stays-presentational` fails the build on all of it.
 
 **What that does not forbid is a screen's own store.** A per-mount vanilla factory in the screen's
 folder, seeded from props and holding view state only, is `useReducer` with a better shape — it
 gives the component no appearance its props cannot produce, which is the property the rule
-protects. That is §9 and your project's architectural decisions; the
+protects. That is §9 and AGENTS.md; the
 distinction is *where the store comes from and what is in it*, not the word "store".
 
 What a composite may take instead: values, `ReactNode` slots, and callbacks. A screen that wants
@@ -80,17 +80,17 @@ live job progress takes `stage` and `percent` as props; the polling belongs to t
 A composite never renders `next/link`. It takes the link as a `ReactNode`:
 
 ```tsx
-// your UI package — takes a slot
+// src/components — takes a slot
 export interface TopBarProps { action?: ReactNode }
 
-// your app path — supplies a router-aware link
+// src/app — supplies a router-aware link
 <TopBar action={<Link href="/login">{t('signIn')}</Link>} />
 ```
 
 `next/link` applies `basePath`, which is the whole reason it must stay in the application: the URL
 prefix is configuration and is **still unagreed** (open question 1).
 
-## 2. Copy comes from `your i18n package`, not from props
+## 2. Copy comes from `no i18n catalogue yet`, not from props
 
 A composite's strings are fixed by the design, so they are read from the catalogue rather than
 accepted as props. A caller that wants different words wants a different component.
@@ -105,20 +105,20 @@ and is its responsibility to translate. Assert on copy the component owns, not o
 
 `expectNoHardcodedCopy` renders under the pseudo-locale, where every catalogue string comes back
 bracketed — so unbracketed text on screen was written into the component. See
-your project's architectural decisions.
+AGENTS.md.
 
-## 3. Compose from `your component library`; reach for `buttonVariants`, not a copy
+## 3. Compose from `src/components/ui`; reach for `buttonVariants`, not a copy
 
 ```tsx
-import { Button, buttonVariants } from 'your component library';
-import { cn } from 'your component library/utils';
+import { Button, buttonVariants } from 'src/components/ui';
+import { cn } from 'src/components/ui/utils';
 ```
 
 **A link that looks like a button is a link.** Use `buttonVariants({ variant, size })` on the `<a>`
 rather than nesting an `<a>` inside a `<Button>` — one source of truth for the styling, and no
 invalid nesting.
 
-If a composite needs a visual treatment `your component library` does not have, that is a **primitive-level change**
+If a composite needs a visual treatment `src/components/ui` does not have, that is a **primitive-level change**
 — add the variant there and use it here. Restyling a primitive locally with overrides is how two
 answers to one question appear. That is golden rule 3 at
 this layer: the second local override is the signal, not the fifth.
@@ -131,12 +131,12 @@ The claim is *indistinguishable from the frame*, so check it against the frame:
 |---|---|
 | Dimensions | The frame is 1280×832 desktop / 390×832 mobile; the auth top bar is 1280×56 at every width |
 | Layout | `get_screenshot` on the node beside the story, at the same viewport |
-| Spacing and colour | Tokens only — `your guard checks`'s `tokens-resolve` catches a name the theme does not declare |
+| Spacing and colour | Tokens only — the token checks in review catches a name theme does not declare |
 | Structure | `RESPONSIVE.md` §2 — the app is a **sidebar layout on desktop and a top-bar layout on mobile**, a paradigm switch rather than a narrowing sidebar |
 
 **What the browser run does not check: the typeface.** It renders in the fallback stack via
-`your UI testing utilities/font-setup`, so a measurement cannot move because a font loaded differently
-(your project's architectural decisions). Storybook uses the tracked brand
+`e2e//font-setup`, so a measurement cannot move because a font loaded differently
+(AGENTS.md). Storybook uses the tracked brand
 fonts. Layout, spacing, colour and structure are covered; typography is not. Do not read a
 green quality test as "the type is right".
 
@@ -148,7 +148,7 @@ layer while its wordmark sat 109px from where the design puts it.
 ## 5. There is no comparison layer any more
 
 A composite's claim is still *indistinguishable from the frame*. **Nothing checks it
-mechanically.** Two layers used to, and both are retired (your testing strategy, your visual testing decision):
+mechanically.** Two layers used to, and both are retired (docs/engineering/testing.md, the visual testing decision):
 
 | Layer | Answered | Why it went |
 |---|---|---|
@@ -161,29 +161,29 @@ that runs in CI *and* snapshots tracked in the repository — both, not either.
 
 **So what binds a composite to the design now:** `quality` still measures geometry, touch
 targets, states and computed tokens absolutely, and `tokens-resolve` and
-`no-arbitrary-design-values` still refuse a value the theme does not declare. Those catch a
+`no-arbitrary-design-values` still refuse a value theme does not declare. Those catch a
 great deal. What they cannot catch is the top-bar failure this layer was built for — 19/19
 green while the wordmark sat 109px from where the design puts it. **When a task turns on
 design source fidelity, check it by eye and say that is what you did.** Do not let a green
 `test:browser` stand in for a comparison nothing performs.
 
 **Expected diffs (customizations)** are still recorded in
-`figma/divergences.json` — your design specification §8
+`figma/divergences.json` — docs/design/README.md §8
 in machine form — and still worth reading when you are deciding whether a disagreement with
 design source is deliberate.
 
 - **Only two viewports.** The design exists at exactly 1280×832 and 390×832. 768 and 1024 were
-  never drawn, so there is nothing to compare them to — the quality layer covers them absolutely.
+ never drawn, so there is nothing to compare them to — the quality layer covers them absolutely.
 - **Pin the ambiguous.** `data-figma="15:1459"` on the element you mean is the designed escape
-  hatch; a pin that names a node the snapshot lacks is a hard error (`pin-unresolved`), so a stale
-  pin cannot silently degrade to guessing.
+ hatch; a pin that names a node the snapshot lacks is a hard error (`pin-unresolved`), so a stale
+ pin cannot silently degrade to guessing.
 - **The snapshot is tracked, generated design data.** A design change is a reviewable diff in
-  `your resources pathfigma/boxes/`, regenerated by `design:sync`. When the design moves a node,
-  re-run the sync, never hand-edit the snapshot.
+ `public/figma/boxes/`, regenerated by `design:sync`. When the design moves a node,
+ re-run the sync, never hand-edit the snapshot.
 
 ## 6. Testing a composite
 
-Four files beside the component. From `your UI testing utilities` and `your visual testing package`:
+Four files beside the component. From `e2e/` and `src/components`:
 
 ```tsx
 // <name>.test.tsx — jsdom, structure and the i18n contract
@@ -191,8 +191,8 @@ renderWithProviders(<TopBar />);
 expectNoHardcodedCopy(renderPseudo(<TopBar />).container);
 
 // <name>.quality.test.tsx — Chromium, absolute checks
-expectNoGeometryDefects(container);   // overflow, clipping, tap size, obscured controls
-expectTokenisedStyles(container);     // every computed colour is a theme value
+expectNoGeometryDefects(container); // overflow, clipping, tap size, obscured controls
+expectTokenisedStyles(container); // every computed colour is a theme value
 expectFocusVisible(action);
 ```
 
@@ -202,7 +202,7 @@ of one appearance drift, and the screenshot then passes against the stale one.
 
 Baselines live in `__screenshots__/` beside the test. **The first run writes them and fails on
 purpose.** Open the PNG before keeping it: an unreviewed baseline records whatever was on screen,
-and the first baselines written in your repository recorded entirely unstyled components.
+and the first baselines written in this repository recorded entirely unstyled components.
 
 Details, and the pseudo-locale overflow check, are in
 testing.md.
@@ -213,11 +213,11 @@ testing.md.
 |---|---|---|
 | A **widget** | Reused across screens — `TopBar`, `AuthCard`, `ResultSlider` | `<feature>/<name>/` |
 | A **screen** | One design frame end to end — `SignInScreen` | inside its feature |
-| A **primitive** | Generic, no project screen knowledge | `your component library` — different skill |
-| A **feature** | It fetches, routes, polls, reads a store or holds session state | `your app path` — different skill |
+| A **primitive** | Generic, no project screen knowledge | `src/components/ui` — different skill |
+| A **feature** | It fetches, routes, polls, reads a store or holds session state | `src/app` — different skill |
 
 Wanted by two features: leave it in its owner and import across. Wanted by a third: promote it to
-`shell/`, or notice it was a `your component library` primitive all along. Genuinely unsure between `ds` and `ui`:
+`shell/`, or notice it was a `src/components/ui` primitive all along. Genuinely unsure between `ds` and `ui`:
 choose `ds`, because promoting a primitive later is easier than splitting a composite apart.
 
 **A screen composes the shell; it does not rebuild it.** The page frame is
@@ -227,7 +227,7 @@ composes it and owns only its body. Rebuilding the chrome in the screen is the f
 golden rule 3 names, and it is how this layer's prop
 drilling used to arrive (nine copies, each threading `nav`). `result-screen` is the
 worked example of a screen that composes the shell and then splits its own body into
-widgets (your project's architectural decisions).
+widgets (AGENTS.md).
 
 **A fallback constant is not a default; it is a hidden bug.** `PortalShell` still
 renders `DEFAULT_USER = { name: 'Laura Simpson' }` when a caller omits `nav.user`, so
@@ -240,8 +240,8 @@ taken against the frame's example account.
 
 **`models/` does not exist yet, deliberately.** Prop types live with their component until two
 features genuinely share one. When that happens the shared type is a *view model* — plain types, no
-zod, and **not** derived from `your contract package`; `your app path` maps DTO to view model at the boundary.
-That mapping is your component layering decision's boundary working as intended, not a workaround.
+zod, and **not** derived from `src/lib/api.ts`; `src/app` maps DTO to view model at the boundary.
+That mapping is the component layering decision's boundary working as intended, not a workaround.
 
 ## 8. The composition ladder: page → form → widget → primitive
 
@@ -251,33 +251,33 @@ if a component reaches for a job the rung below it already owns, the component i
 
 | Rung | Where | Owns | Never owns |
 |---|---|---|---|
-| **Primitive** | `your component library` | One generic control's markup and styles (Input, Button, Select) | project screen knowledge |
-| **Widget** | `your UI package source path<feature>/<name>/` | An project control's *mechanics*: its interaction state (open/close, highlight, focus), its keyboard handling, its aria wiring | Validation, fetching, the caller's data |
-| **Form** | `your UI package source path<feature>/<name>/` | The field values, validation (required, blur, error clearing per your interaction specification §6), submission | Another widget's mechanics |
-| **Screen** | `your UI package source path<feature>/<name>/*-screen` | The design frame's composition inside the shell paradigm | Data (props-only, always) |
-| **Page** | `your app route path` | The aggregation: fetches, maps DTO → props, routing, session | Presentation decisions that have a home above |
+| **Primitive** | `src/components/ui` | One generic control's markup and styles (Input, Button, Select) | project screen knowledge |
+| **Widget** | `src/components source path<feature>/<name>/` | An project control's *mechanics*: its interaction state (open/close, highlight, focus), its keyboard handling, its aria wiring | Validation, fetching, the caller's data |
+| **Form** | `src/components source path<feature>/<name>/` | The field values, validation (required, blur, error clearing per the component spec (openspec/changes/<id>/specs/) §6), submission | Another widget's mechanics |
+| **Screen** | `src/components source path<feature>/<name>/*-screen` | The design frame's composition inside the shell paradigm | Data (props-only, always) |
+| **Page** | `the app route path` | The aggregation: fetches, maps DTO → props, routing, session | Presentation decisions that have a home above |
 
 **Rules that fall out of the ladder:**
 
 - **A widget is separated from the form that hosts it.** When a field control needs behaviour
-  beyond what the `your component library` primitive gives it — a suggestion list, a popup, arrow-key
-  navigation — it becomes its own widget in its own feature folder, with its own four test
-  surfaces. A form does not host another component's mechanics; `NewProjectForm` composes
-  `AddressInput` rather than owning the listbox.
+ beyond what the `src/components/ui` primitive gives it — a suggestion list, a popup, arrow-key
+ navigation — it becomes its own widget in its own feature folder, with its own four test
+ surfaces. A form does not host another component's mechanics; `NewProjectForm` composes
+ `AddressInput` rather than owning the listbox.
 - **The form controls logic and validation.** The form owns the required rules, blur and
-  submit validation, and which field error shows. The widget takes `error` as a prop and
-  renders it; it never decides validity. Accepting a suggestion is just `onChange` from the
-  form's point of view — the value fixes the field, and the form's own error-clearing rule
-  (your interaction specification §6) does the rest.
+ submit validation, and which field error shows. The widget takes `error` as a prop and
+ renders it; it never decides validity. Accepting a suggestion is just `onChange` from the
+ form's point of view — the value fixes the field, and the form's own error-clearing rule
+ (the component spec (openspec/changes/<id>/specs/) §6) does the rest.
 - **Controlled at the boundary.** The caller owns the value; the widget takes
-  `value`/`onChange` and reports facts upward (`onSelect(suggestion)`, not "the user clicked
-  row 3"). Interaction state that never leaves the widget (focused, open, highlight index)
-  stays inside it — lift only what a caller must react to. Tests drive a controlled widget
-  through a real value owner (a small harness), not a no-op mock, or composition breaks.
+ `value`/`onChange` and reports facts upward (`onSelect(suggestion)`, not "the user clicked
+ row 3"). Interaction state that never leaves the widget (focused, open, highlight index)
+ stays inside it — lift only what a caller must react to. Tests drive a controlled widget
+ through a real value owner (a small harness), not a no-op mock, or composition breaks.
 - **The page is an aggregation, not a layout owner.** It wires data into props and places
-  screens; if the page is writing component-internal logic, that logic belongs one rung down.
+ screens; if the page is writing component-internal logic, that logic belongs one rung down.
 - **One forwarding level.** Props pass through at most one composite level (form → widget);
-  each rung adds meaning instead of relaying.
+ each rung adds meaning instead of relaying.
 
 `ui-stays-presentational` enforces the outer boundary (no fetch, no store); the ladder is the
 internal discipline that keeps a form from quietly becoming a page.
@@ -290,7 +290,7 @@ tested, described in a story, or read in one pass.
 
 ### The budget, and what each number is telling you
 
-`your guard checks`'s **`composite-complexity`** fails the build past any of these, per component file, in
-both packages (your project's architectural decisions):
+`bun run validate`'s **`composite-complexity`** fails the build past any of these, per component file, in
+both packages (AGENTS.md):
 
 [Showing lines 1-300 of 507. Use :301 to continue. Read artifact://5 for full output]

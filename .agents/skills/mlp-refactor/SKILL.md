@@ -1,6 +1,6 @@
 ---
 name: refactor
-description: "Changing the shape of project code without changing what it does — the loop that makes that safe, at any layer. Load this when asked to refactor, clean up, tidy, restructure, simplify, split, extract, decompose, modularise or 'improve the quality of' existing code; when a component, service, route, hook, store or module has grown too big, too complex, too coupled or untestable; when your guard checks reports a composite over its complexity budget or a ledger entry to pay down; when a screen has too many props or too many useState calls; when logic sits in the wrong layer — a fetch in a composite, business logic in a route handler, a store holding a database row, a DTO leaking into your UI package; when duplication has reached a third copy; when asked to make something testable, to separate concerns, to fix the data flow, or to bring a file up to standard. Owns the MEASURE → PIN → MOVE → PROVE → RECORD loop, the rule that behaviour does not change, the characterisation-harness requirement, the phase discipline that keeps structure, behaviour and interface in separate commits, and the smell catalogue from your database to the pixel. Routes to ui-development §9 for splitting a screen, state-management for where a value lives, api-contract for the service boundary, tdd for which mode can observe a claim, and review for the gate."
+description: "Changing the shape of project code without changing what it does — the loop that makes that safe, at any layer. Load this when asked to refactor, clean up, tidy, restructure, simplify, split, extract, decompose, modularise or 'improve the quality of' existing code; when a component, service, route, hook, store or module has grown too big, too complex, too coupled or untestable; when bun run validate reports a composite over its complexity budget or a ledger entry to pay down; when a screen has too many props or too many useState calls; when logic sits in the wrong layer — a fetch in a composite, business logic in a route handler, a store holding a database row, a DTO leaking into src/components; when duplication has reached a third copy; when asked to make something testable, to separate concerns, to fix the data flow, or to bring a file up to standard. Owns the MEASURE → PIN → MOVE → PROVE → RECORD loop, the rule that behaviour does not change, the characterisation-harness requirement, the phase discipline that keeps structure, behaviour and interface in separate commits, and the smell catalogue from the backend (new-api) (no database in this repo) to the pixel. Routes to ui-development §9 for splitting a screen, state-management for where a value lives, api-contract for the service boundary, tdd for which mode can observe a claim, and review for the gate."
 ---
 
 # Refactoring project code
@@ -10,8 +10,8 @@ constraint checkable rather than hoped for. A change that improves the shape *an
 is two changes, and the reason to separate them is not tidiness — it is that a behavioural change
 buried in a thousand-line move is a change nobody reviewed.
 
-That constraint is also what makes this the highest-leverage work in the repository. your agent instructions's
-[golden rules](../../../your agent instructions#golden-rules) set the standard — *the codebase gets simpler as the
+That constraint is also what makes this the highest-leverage work in the repository. AGENTS.md's
+[golden rules](../../../AGENTS.md#golden-rules) set the standard — *the codebase gets simpler as the
 product gets larger*, and *the test is not "is this good code" but "is the next change cheaper than
 this one was"*. Refactoring is the only activity whose entire purpose is that test.
 
@@ -52,16 +52,16 @@ renaming, deleting a dead branch, splitting one file into two, replacing a dupli
 call.
 
 **Yes** — when the refactor changes an interface other workspaces name, moves a value between layers
-of your project architectural decisions's ladder, or takes more than
+of AGENTS.md's ladder, or takes more than
 one commit to land safely. That is exactly when there is something to specify and someone to warn.
 
 ```
-your change-tool new change refactor-<short-name> --schema <layer>
+openspec new change refactor-<short-name> --schema <layer>
 ```
 
 **There is no `mlp-refactor` schema, deliberately.** A change has a type and it is one layer
-(your project architectural decisions) — `ui` for your component library path and
-your UI package path, `fe` for your app path, `be` for your API app path and the data model, `cross-cutting` when it
+(AGENTS.md) — `ui` for src/components/ui and
+src/components, `fe` for src/app, `be` for src/app/api and the data model, `cross-cutting` when it
 genuinely crosses. A refactor that cannot pick one is a refactor that is doing too much at once, and
 that is a finding rather than a reason for a sixth type.
 
@@ -74,16 +74,16 @@ existed before you had an opinion.
 
 | Signal | How to get it | What it means |
 |---|---|---|
-| A composite past its budget | your guard checks → `composite-complexity` | 24 props / 6 stateful hooks / 800 code lines / complexity 45. Over any of them, the component is several components sharing a file (your project architectural decisions) |
+| A composite past its budget | bun run validate → `composite-complexity` | 24 props / 6 stateful hooks / 800 code lines / complexity 45. Over any of them, the component is several components sharing a file (AGENTS.md) |
 | A standing debt entry | `RECORDED` in `packages/guard/src/checks/composite-complexity.ts` | The repository's own list of what it already knows is wrong, with numbers. Paying one down is always legitimate work |
-| A hook that cannot work | your guard checks → `component-performance` | A memo with no dependency array, or a dependency built inside its own array |
-| A boundary already crossed | your guard checks → `ui-stays-presentational`, `service-purity`, `cross-app-imports`, `client-api-boundary`, `core-neutrality`, `vanilla-store-factories` | The build is red; the refactor is not optional |
-| A missing surface | your guard checks → `component-has-surfaces`, `component-has-stories` (warnings) | A component with no quality test has nothing measuring its real rendering |
+| A hook that cannot work | bun run validate → `component-performance` | A memo with no dependency array, or a dependency built inside its own array |
+| A boundary already crossed | bun run validate → `ui-stays-presentational`, `service-purity`, `cross-app-imports`, `client-api-boundary`, `core-neutrality`, `vanilla-store-factories` | The build is red; the refactor is not optional |
+| A missing surface | bun run validate → `component-has-surfaces`, `component-has-stories` (warnings) | A component with no quality test has nothing measuring its real rendering |
 | The test that is too big | `wc -c` on the file's test | A test file that is the largest in its package is telling you every claim needs the whole thing rendered |
 | A waterfall or a duplicate read | read the page's `await`s | Sequential independent server reads, or two callers of an uncached reader in one render (state-and-data-flow.md) |
 | The third copy | the change you are about to make touches three files identically | *Two is a coincidence; three is a missing abstraction* — and the abstraction **replaces** all three |
 
-`references/smells.md` is the full catalogue, layer by layer from your database to the pixel, each smell
+`references/smells.md` is the full catalogue, layer by layer from the backend (new-api) (no database in this repo) to the pixel, each smell
 with the rule that owns it and — where there is one — the instance already in this repository.
 
 **Write down what you measured before you touch anything.** The number is what PROVE compares
@@ -111,7 +111,7 @@ correct behaviour now means the test goes green on code that has never run.
 
 `mlp-tdd` owns which of the four modes can observe which claim, and the answer decides where the
 harness lives: a pure function is a unit test, geometry and computed tokens are Chromium
-(your browser tests), a service is a unit test, a route is a route test, and a journey across the
+(bun run test:e2e), a service is a unit test, a route is a route test, and a journey across the
 whole stack is `e2e/`.
 
 **The harness is read-only for the duration.** Editing it during a move is how a safety net becomes
@@ -122,21 +122,21 @@ a rubber stamp. If a move genuinely requires the harness to change, that move is
 Three kinds of change, in this order, and each finishes before the next starts:
 
 1. **Structure** — code moves; nothing that calls it changes. Extract a function, split a file, pull
-   a widget out, lift a service out of a handler. Re-export moved symbols from where they used to
-   live so the public surface is byte-identical and the harness stays valid.
+ a widget out, lift a service out of a handler. Re-export moved symbols from where they used to
+ live so the public surface is byte-identical and the harness stays valid.
 2. **Behaviour** — nothing here, by definition. If you have some, it belongs to a different change.
 3. **Interface** — the signature, the props, the response schema, the exported names. The breaking
-   one. Callers update in the same commit, and this is the phase that needs the change folder, the
-   review and the e2e slice.
+ one. Callers update in the same commit, and this is the phase that needs the change folder, the
+ review and the e2e slice.
 
 **Run the harness after every move and commit each one.** A red run then names the move that did it,
 which is worth far more than the tidiness of one large commit. The commit message says what moved
 and why the next change is cheaper — that message is the most durable documentation the repository
-has ([conventions](../../../your engineering conventions)).
+has ([conventions](../../../AGENTS.md)).
 
 **Delete rather than deprecate.** A prop still declared and no longer read typechecks and does
 nothing, which is precisely how `result-screen`'s browse surface broke: four props passed into
-silence with a green build behind them. [Golden rule 2](../../../your agent instructions#golden-rules) is the
+silence with a green build behind them. [Golden rule 2](../../../AGENTS.md#golden-rules) is the
 general form — *a new abstraction earns its place by deleting*; if the move adds a layer and removes
 nothing, say what it will remove and when, or do not add it.
 
@@ -149,14 +149,14 @@ budget*. Do not restate it here; it owns the widget seam, the screen store and t
 Green is not the claim. The claim is **"behaviour did not change, and here is what would have caught
 it if it had"**.
 
-- your validation command — lint, guards, typecheck, jsdom tests. The common path, and the floor.
-- your browser tests — if anything about appearance or geometry could have moved. It is not in CI
-  by default (your project architectural decisions, amended), so a your UI package path
-  refactor that skips it has verified nothing about the layer whose whole subject is appearance.
-- The e2e slice the code is on — `cd e2e && pnpm test:e2e journeys/<name>`, or the your CI label for e2e checks
-  label. Required for any interface-phase change and any move across a layer boundary.
+- bun run validate — lint, guards, typecheck, jsdom tests. The common path, and the floor.
+- bun run test:e2e — if anything about appearance or geometry could have moved. It is not in CI
+ by default (AGENTS.md), so a src/components
+ refactor that skips it has verified nothing about the layer whose whole subject is appearance.
+- The e2e slice the code is on — `cd e2e && bun run test:e2e journeys/<name>`, or the CI label for e2e checks
+ label. Required for any interface-phase change and any move across a layer boundary.
 - **The measurement from step 1, taken again.** A refactor with no movement in the number it was
-  started for did not do the thing it was for.
+ started for did not do the thing it was for.
 
 **Say what you did not run and why.** `mlp-review`'s standard applies unchanged, and a refactor is
 the change type where "the tests pass" is most likely to be true and least likely to be sufficient.
@@ -170,18 +170,18 @@ A refactor that does not update what described the old shape has moved the probl
 documentation:
 
 - **The ledger.** `composite-complexity` fails when a recorded number improves and its entry has not
-  followed, and names the number to write. Delete the entry when the last measure is inside budget.
-  **Adding an entry is never how a refactor is finished.**
-- **The documents that described the old shape.** your agent instructions's boundaries, the workspace
-  your agent instructions, `docs/engineering/*`. `conventions.md` is explicit: *changing a rule means checking
-  the skills that cite it, in the same pull request.*
+ followed, and names the number to write. Delete the entry when the last measure is inside budget.
+ **Adding an entry is never how a refactor is finished.**
+- **The documents that described the old shape.** AGENTS.md's boundaries, the workspace
+ AGENTS.md, `docs/engineering/*`. `conventions.md` is explicit: *changing a rule means checking
+ the skills that cite it, in the same pull request.*
 - **A decision record**, when the refactor establishes a rule rather than applying one — a new
-  boundary, a new place a kind of value lives, a pattern the next screen should copy. Seven sections,
-  and *What would change our mind* is mandatory. your project architectural decisions
-  is the recent example, and it exists because splitting one screen decided how every later screen
-  is shaped.
+ boundary, a new place a kind of value lives, a pattern the next screen should copy. Seven sections,
+ and *What would change our mind* is mandatory. AGENTS.md
+ is the recent example, and it exists because splitting one screen decided how every later screen
+ is shaped.
 - **Nothing, if it applied an existing rule.** Most refactors are this. Do not write a record for
-  obeying one.
+ obeying one.
 
 ---
 
@@ -190,18 +190,18 @@ documentation:
 Each of these is a real answer, and saying it is better work than a plausible-looking move:
 
 - **The code is ugly but stable, and nothing is about to touch it.** The test is whether the *next*
-  change is cheaper — with no next change, the benefit is zero and the risk is not.
+ change is cheaper — with no next change, the benefit is zero and the risk is not.
 - **You cannot pin the behaviour and cannot afford to.** Then the honest sequence is: write the
-  harness as its own piece of work, land it, and refactor later. Not: move carefully and hope.
+ harness as its own piece of work, land it, and refactor later. Not: move carefully and hope.
 - **The requirement is about to change.** Restructuring around a shape that is being replaced next
-  sprint spends the budget twice.
+ sprint spends the budget twice.
 - **You are one commit into a feature.** Finish it, then refactor. A half-built feature has no stable
-  behaviour to hold still.
+ behaviour to hold still.
 - **The "duplication" is a coincidence.** Two things that look alike and change for different reasons
-  are not duplication, and merging them creates a shared thing with two masters — which is worse than
-  the copies, and harder to undo.
+ are not duplication, and merging them creates a shared thing with two masters — which is worse than
+ the copies, and harder to undo.
 - **It would be a rewrite.** Rewriting is not refactoring: it discards the behaviour nobody wrote
-  down, which is most of what old code is worth.
+ down, which is most of what old code is worth.
 
 ## Before you finish
 
@@ -210,8 +210,8 @@ Each of these is a real answer, and saying it is better work than a plausible-lo
 - [ ] Structure, behaviour and interface are in separate commits
 - [ ] Moved symbols are re-exported, or every caller is updated in the same commit
 - [ ] The measurement from step 1, taken again and stated
-- [ ] your validation command; your browser tests if appearance could have moved; the e2e slice if a
-      boundary or an interface did
+- [ ] bun run validate; bun run test:e2e if appearance could have moved; the e2e slice if a
+ boundary or an interface did
 - [ ] The ledger followed the improvement down, and no entry was added
 - [ ] Every document and skill that described the old shape is updated in this change
 - [ ] The commit message says why the next change is now cheaper
@@ -221,11 +221,11 @@ Each of these is a real answer, and saying it is better work than a plausible-lo
 - `references/smells.md` — the catalogue, layer by layer, with the repository's own instances.
 - [`mlp-ui-development` §9](../ui-development/SKILL.md) — splitting an over-budget screen.
 - [`mlp-state-management`](../state-management/SKILL.md) — where a value lives, and the
-  anti-pattern catalogue the guard scans for.
+ anti-pattern catalogue the guard scans for.
 - [`mlp-api-contract`](../api-contract/SKILL.md) — the service boundary, response schemas,
-  migrations.
+ migrations.
 - [`mlp-tdd`](../tdd/SKILL.md) / [`mlp-test`](../test/SKILL.md) — which mode observes which
-  claim, and how to run it.
+ claim, and how to run it.
 - [`mlp-review`](review) — the gate, and the architecture axis that judges whether
-  the seam was the right one.
-- [your agent instructions golden rules](../../../your agent instructions#golden-rules) — the standard the whole loop serves.
+ the seam was the right one.
+- [AGENTS.md golden rules](../../../AGENTS.md#golden-rules) — the standard the whole loop serves.

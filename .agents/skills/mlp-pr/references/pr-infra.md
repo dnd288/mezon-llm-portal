@@ -1,6 +1,6 @@
 # Infra PR — `pr-infra`
 
-**When:** AWS, pipeline, or infrastructure work owned by your infrastructure package.
+**When:** AWS, pipeline, or infrastructure work owned by this project.
 
 **Rule:** `layer:infra` work is `chore(infra):` and follows the chore path. Security-sensitive changes get a `mlp-security` review before merge.
 
@@ -11,7 +11,7 @@
 | Branch | `docs/<short-description>` or `feature/<issue>-short-description` if tied to an issue |
 | Title | `chore(infra):` — no `—` suffix; all context goes in the body |
 | Issue link | `Closes #N` if tied to an issue, otherwise none |
-| Proof | `your validation command`; CloudFormation diff reviewed manually |
+| Proof | `bun run validate`; CloudFormation diff reviewed manually |
 | Labels | `layer:infra` |
 
 ## Template body fields

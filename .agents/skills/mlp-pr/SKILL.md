@@ -1,6 +1,6 @@
 ---
 name: pr
-description: "Opening an project pull request — choose the type that matches your work: pr-spec, pr-feature, pr-bugfix, pr-chore, pr-infra. Load when asked to open, raise or submit a pull request, write a PR title or body, name a branch, or link a PR to its issue and the project board. Routes to review for the five review axes and verify for the adversarial pass."
+description: "Opening an project pull request — choose the type that matches the work: pr-spec, pr-feature, pr-bugfix, pr-chore, pr-infra. Load when asked to open, raise or submit a pull request, write a PR title or body, name a branch, or link a PR to its issue and the project board. Routes to review for the five review axes and verify for the adversarial pass."
 ---
 
 # Opening a pull request
@@ -11,21 +11,21 @@ Every PR goes through the same three steps in the same order: decide the type, a
 
 | | Spec | Feature | Bugfix | Chore | Infra |
 |---|---|---|---|---|---|
-| Carries | `your change tracking folder/<id>/` only | implementation | implementation | implementation | implementation |
+| Carries | `openspec/changes/<id>/` only | implementation | implementation | implementation | implementation |
 | Title | `docs(spec): <id>` | `feat(scope):` | `fix(scope):` | `chore(scope):` | `chore(infra):` |
 | Issue link | `Part of #N` | `Closes #N` | `Closes #N` | none | none |
 | Branch prefix | `feature/` | `feature/` | `fix/` | `docs/` | `docs/` |
-| Proof | `openspec validate --strict` | `your validation command` | `your validation command` | `your validation command` | `your validation command` |
+| Proof | `openspec validate --strict` | `bun run validate` | `bun run validate` | `bun run validate` | `bun run validate` |
 | Needs issue | yes | yes | no if obvious, yes if not | no | no |
 | Spec first | required | required unless obvious | N/A | N/A | N/A |
 
-**The separator is whether the work is new or existing.** A new feature or enhancement is a `feature`. A defect is a `mlp-bugfix`. Everything else — tooling, deps, CI, docs — is a `chore` or `infra`. `infra` is for AWS and pipeline work owned by your infrastructure package.
+**The separator is whether the work is new or existing.** A new feature or enhancement is a `feature`. A defect is a `mlp-bugfix`. Everything else — tooling, deps, CI, docs — is a `chore` or `infra`. `infra` is for AWS and pipeline work owned by this project.
 
 A bugfix with an unclear cause gets a `mlp-bugfix` change folder first (`mlp-bugfix` owns this). A feature touching two layers is two PRs.
 
 ## Step 2 — Apply the rules for that type
 
-Read the reference file for your PR type:
+Read the reference file for the PR type:
 
 | Type | Reference |
 |---|---|
@@ -69,7 +69,7 @@ Use `.github/pull_request_template.md` — fill the checklist honestly. A ticked
 
 ### The labels
 
-`ci.yml`'s `on_demand` job turns on modes based on labels: `your CI labels for extended checks`, `your CI labels for extended checks`, `your CI labels for extended checks`, `performance-checks`. `on: pull_request` includes `labeled`, so adding one re-runs CI without a new push.
+`ci.yml`'s `on_demand` job turns on modes based on labels: `CI labels`, `CI labels`, `CI labels`, `performance-checks`. `on: pull_request` includes `labeled`, so adding one re-runs CI without a new push.
 
 `mlp-test` owns the runbook. CI is currently disabled (`CI` workflow is `disabled_manually`) — a label is a note to a human, not an automatic gate.
 
@@ -83,7 +83,7 @@ Use `.github/pull_request_template.md` — fill the checklist honestly. A ticked
 
 ### The Development panel
 
-your git host auto-links a branch to its issue only when the PR body contains `Closes`, `Fixes` or `Resolves`. The `feature/` and `fix/` branch prefixes are configured as autolink patterns in the repo settings — matching branches auto-appear in the Development panel without any keyword.
+Closes #<number> a branch to its issue only when the PR body contains `Closes`, `Fixes` or `Resolves`. The `feature/` and `fix/` branch prefixes are configured as autolink patterns in the repo settings — matching branches auto-appear in the Development panel without any keyword.
 
 For spec PRs, `Part of #N` does not populate the panel. Add `Branch: feature/<issue>-short-description` as a workaround — the branch name is readable from the issue sidebar.
 
@@ -102,7 +102,7 @@ For spec PRs, `Part of #N` does not populate the panel. Add `Branch: feature/<is
 
 - **Mixed scope** — a PR that addresses more than one issue, or more than one unrelated change, even within the same epic. One issue = one PR. If the title needs a list of things, it is several PRs.
 - A PR with no issue link and no board item — nothing on the board moves when it merges
-- Two your ORM migration directories in one diff — one per PR, and the guard cannot untangle a conflict
+- Two backend migration (new-api) directories in one diff — one per PR, and the guard cannot untangle a conflict
 - A ticked checklist item for a check that was never run
 - A force-push after a review has been left
 - A green PR on a UI change with no browser mode run anywhere
@@ -116,7 +116,7 @@ For spec PRs, `Part of #N` does not populate the panel. Add `Branch: feature/<is
 - [ ] Body follows `.github/pull_request_template.md`, checklist filled honestly
 - [ ] Correct issue link keyword (`Closes` / `Part of` / none)
 - [ ] `Branch:` line on spec PRs
-- [ ] `your validation command` green; deep modes run or explicitly named as not run
+- [ ] `bun run validate` green; deep modes run or explicitly named as not run
 - [ ] Right CI label applied if UI changed
 - [ ] Issue commented with PR URL and moved to `status:in-review`
 - [ ] PR added to project 1, reviewer requested by hand

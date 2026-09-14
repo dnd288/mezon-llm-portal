@@ -6,7 +6,7 @@ description: "Application-level conventions for Next.js App Router work. Load th
 # App Router conventions
 
 Next.js App Router, React, Tailwind v4, TypeScript `strict`. The styling decision is
-your project's architectural decisions; the visual language is `mlp-design`.
+AGENTS.md; the visual language is `mlp-design`.
 
 ## 1. Server Components by default
 
@@ -21,7 +21,7 @@ the directive and which must not.
 **A `"use client"` module's exports are client references, not functions.** A Server Component that
 imports a plain helper from one — a row mapper, a parser, a constant table — gets "Attempted to call
 `x()` from the server" at *runtime*. Nothing static sees it: the directive is legal, the import is
-legal, the types agree, and `your validation command` is green, because vitest has no client/server boundary and
+legal, the types agree, and `bun run validate` is green, because vitest has no client/server boundary and
 the function is just a function there.
 
 So a module a Server Component imports from carries **no directive at all** — it compiles into
@@ -41,7 +41,7 @@ prefix, the prefix must be read from configuration everywhere, with no exception
 
 **The failure mode is why this matters more than it sounds.** A hardcoded prefix works perfectly in
 local development, where there is no prefix, and breaks only once the app is served behind the real
-path — by which point it is in every route, link and image. `your guard checks` rejects literals for exactly
+path — by which point it is in every route, link and image. `bun run validate` rejects literals for exactly
 this reason; if the guard fails, fix the code rather than the guard.
 
 ## 3. Route groups
@@ -53,9 +53,9 @@ the auth requirement differs, and that is a routing concern rather than a render
 ## 4. Talking to the API — the Next server is the only client of it
 
 The client and the API **never import each other**. Request and response types come from
-`your contract package` — zod schemas, platform-neutral, the wire agreement. The client reaches it through `your API package` (typings + typed services), never by naming `your contract package` directly. `your guard checks` enforces both.
+`src/lib/api.ts` — zod schemas, platform-neutral, the wire agreement. The client reaches it through `src/lib/api.ts` (typings + typed services), never by naming `src/lib/api.ts` directly. `bun run validate` enforces both.
 
-**The browser never calls the API directly** (your project's architectural decisions).
+**The browser never calls the API directly** (AGENTS.md).
 Traffic goes browser → Next → API, so there is no CORS to configure, no API path or error
 taxonomy in the bundle, and one place to attach credentials.
 
@@ -69,7 +69,7 @@ production where the browser sees one hostname.
 
 ### Failures: boundaries, classification, and the serialization trap
 
-Read your project's error boundary documentation before adding a boundary; the documentation describes
+Read this project's error boundary documentation before adding a boundary; the documentation describes
 **the four levels** — widget, page content, under auth, global — and what each one cannot catch.
 The level decides how much of the screen a failure takes with it, and the commonest mistake is
 reaching for the route when the subtree was the right size.
@@ -77,32 +77,32 @@ reaching for the route when the subtree was the right size.
 Four traps to watch for:
 
 - **A layout's throw escapes its own `error.tsx`.** A boundary renders *inside* the layout of its
-  segment, so the layout that failed has none. That is why every gate classifies rather than throws:
-  `getSession` answers `null` for a 401 and **throws** for every other status, and an unclassified
-  throw in a layout skips the segment's boundary entirely. Adding
-  a new gated segment means adding its classification, not just its boundary.
+ segment, so the layout that failed has none. That is why every gate classifies rather than throws:
+ `getSession` answers `null` for a 401 and **throws** for every other status, and an unclassified
+ throw in a layout skips the segment's boundary entirely. Adding
+ a new gated segment means adding its classification, not just its boundary.
 - **`redirect()` in a layout half-renders a client navigation.** It is followed correctly on a fresh
-  document request and leaves a soft navigation partial. If a redirect must fire on exactly one
-  route beneath a layout, it was never the layout's to make; it belongs to that route's `page.tsx`.
+ document request and leaves a soft navigation partial. If a redirect must fire on exactly one
+ route beneath a layout, it was never the layout's to make; it belongs to that route's `page.tsx`.
 - **A new segment needs `loading.tsx` and `error.tsx`, and the page needs neither to look fine.**
-  Both are absences, so nothing in the build notices. Make it a checklist item.
-- **An error state that cannot say why hides a defect in your own code.** A `catch` that renders a
-  failure for a cause it did not classify logs the error itself, or a bug in this file becomes
-  indistinguishable from an outage.
+ Both are absences, so nothing in the build notices. Make it a checklist item.
+- **An error state that cannot say why hides a defect in the code.** A `catch` that renders a
+ failure for a cause it did not classify logs the error itself, or a bug in this file becomes
+ indistinguishable from an outage.
 
 The three rules that decide where a failure is *classified*:
 
 - **A client `error.tsx` cannot classify a server-render failure.** Next serializes the error
-  across the server boundary — the boundary receives a generic `Error` with a `digest`, never the
-  class. So `instanceof ApiUnavailableError` inside `error.tsx` would silently do nothing in
-  production. Classify where the typed error is visible (the server fetch site), and let
-  `error.tsx` be the generic safety net it can truthfully be.
+ across the server boundary — the boundary receives a generic `Error` with a `digest`, never the
+ class. So `instanceof ApiUnavailableError` inside `error.tsx` would silently do nothing in
+ production. Classify where the typed error is visible (the server fetch site), and let
+ `error.tsx` be the generic safety net it can truthfully be.
 - **The API being down is not signed out.** The portal
-  layout should render an unavailable state (retry = `router.refresh()`) instead of redirecting to
-  sign-in. A down API must never render as an empty wall or a sign-in prompt.
+ layout should render an unavailable state (retry = `router.refresh()`) instead of redirecting to
+ sign-in. A down API must never render as an empty wall or a sign-in prompt.
 - **Across a Server Action, classification travels as a marker**
-  (e.g. `{ unavailable: true }`) because a Server Action cannot throw across the wire
-  and have the boundary classify it.
+ (e.g. `{ unavailable: true }`) because a Server Action cannot throw across the wire
+ and have the boundary classify it.
 
 ## 5. `next/image` — explicit sizes
 
@@ -117,7 +117,7 @@ For external images, add the hostname to `remotePatterns` in `next.config`.
 
 Pick one mechanism and use it everywhere:
 - `next/font` for Google Fonts or local files — built-in subsetting and self-hosting
-- Tracked `@font-face` declarations in your CSS — explicit control
+- Tracked `@font-face` declarations in the project's `src/app/globals.css` — explicit control
 
 Do not mix. Two mechanisms means two sets of fallback stacks, two flash-of-unstyled-text behaviours,
 and a visual difference that shows only in production builds.
@@ -130,9 +130,9 @@ renders inside it. The boundary is the component file, not the route.
 ### What changes at each layer
 
 - **Server Components** can `async`, can read `cookies()`, `headers()`, search params; cannot use
-  hooks. They are the data-fetching and access-control layer.
+ hooks. They are the data-fetching and access-control layer.
 - **Client Components** can use hooks, handle events, manage local state; cannot read server-only
-  APIs. They are the interaction layer.
+ APIs. They are the interaction layer.
 - **Shared modules** (no directive) compile into whichever graph imports them.
 
 ### Composites are presentational
@@ -146,14 +146,14 @@ composite that needs a `fetch` or a route push has left its layer — split it.
 The Next server is the single client of the API (§4), so integrations stack up here:
 
 - **The API hop** — a Server Component or Action calls the API endpoint with the session cookie
-  forwarded; the browser never reaches the API directly.
+ forwarded; the browser never reaches the API directly.
 - **The upload hop** — large files go **direct to object storage** with a presigned
-  PUT the proxy mints (§4); the object is never streamed through the app.
+ PUT the proxy mints (§4); the object is never streamed through the app.
 - **Background jobs** — accepting work enqueues a message; the worker
-  processes it asynchronously. The client polls status, never holds a queue handle.
+ processes it asynchronously. The client polls status, never holds a queue handle.
 - **Images and fonts** — `next/image` with explicit sizes (§5); fonts via one mechanism (§6).
 - **Third-party** — external integrations sit behind the proxy boundary
-  (integration tests prove the seams — `mlp-test`).
+ (integration tests prove the seams — `mlp-test`).
 
 Every integration that crosses the wire has a contract (or schema in the integration package for
 server-to-server), tested at its seam. A new external hop without a schema behind the proxy is a
@@ -161,25 +161,25 @@ feature that has not been specified yet.
 
 ## 7f. Access control — asking the question from a route
 
-Read the security documentation for your project's authorization model first,
-and load `mlp-security` for a review. Your contract package defines the policy vocabulary;
-your app's access module is how a component asks.
+Read the security documentation for this project's authorization model first,
+and load `mlp-security` for a review. `src/lib/api.ts` defines the policy vocabulary;
+the app's access module is how a component asks.
 
 What is specific to a route, and therefore lives here:
 
 - **Server Components compute; Client Components ask a hook.** `can(subjectOf(session), Permission.X)`
-  in a `page.tsx` (`<domain>/page.tsx` is the pattern), `usePolicy()` / `useCan(permission,
-  resource)` below a `"use client"` boundary. Both reach the policy through your API package — naming
-  the contract package from the client fails the boundary check.
+ in a `page.tsx` (`<domain>/page.tsx` is the pattern), `usePolicy()` / `useCan(permission,
+ resource)` below a `"use client"` boundary. Both reach the policy through src/lib/api.ts — naming
+ the contract package from the client fails the boundary check.
 - **Pass the decision, not the subject.** A screen receives `canCreate={…}`, not a session it can
-  interrogate: UI composites are presentational, and a policy call inside one is the same
-  violation as a `fetch` (§7). It also removes the appearance a pixel baseline could not predict.
+ interrogate: UI composites are presentational, and a policy call inside one is the same
+ violation as a `fetch` (§7). It also removes the appearance a pixel baseline could not predict.
 - **A refused read is a routing outcome, and each status has a different one.** 401 → the sign-in
-  redirect carrying where they were going; 403/404 → `notFound()`; anything else → the segment's
-  boundary. A page that renders an empty list for a refusal is telling the reader there is nothing
-  there, which is the same defect class as rendering an outage as "you have no items" (§4).
+ redirect carrying where they were going; 403/404 → `notFound()`; anything else → the segment's
+ boundary. A page that renders an empty list for a refusal is telling the reader there is nothing
+ there, which is the same defect class as rendering an outage as "you have no items" (§4).
 - **Say at each gate that it is a courtesy.** The comment is load-bearing: without it the next
-  reader assumes the client check or the server check is redundant, and removes one.
+ reader assumes the client check or the server check is redundant, and removes one.
 
 ## 8. Business logic does not live here
 

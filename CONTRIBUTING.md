@@ -12,18 +12,19 @@ This template describes a generic contribution workflow for projects scaffolded 
 
 Install the project prerequisites and confirm the local toolchain works.
 
-- Runtime: `<runtime and version>`
-- Package manager: `<package manager and version>`
-- Database or service dependencies: `<local services>`
-- Browser or mobile tooling: `<optional tooling>`
-- Secrets: copy `<example env file>` to `<local env file>` and fill only local development values
+- Runtime: **Bun 1.x** (see `.tool-versions` or `package.json` → `packageManager`)
+- Package manager: **bun** (`bun --version`)
+- Database or service dependencies: none — this project is a frontend-only Next.js customer portal that proxies to the `mezon-llm` (new-api) Go backend; no local database
+- Browser or mobile tooling: **Chromium** (installed once via `bunx playwright install chromium`) for e2e browser tests
+- Secrets: copy `.env.example` to `.env.local` and fill `MEZON_CLIENT_ID`, `MEZON_CLIENT_SECRET`, `JWT_SECRET`, `NEW_API_BASE_URL`, `NEW_API_ADMIN_TOKEN`, etc. (full list in `.env.example`)
 
 Run the bootstrap command once:
 
 ```sh
-<install command>
-<setup command>
-<validate command>
+bun install
+bun run validate          # typecheck + lint must pass
+bun run test              # vitest unit tests
+bun run test:e2e           # playwright-bdd e2e (installs browser if needed)
 ```
 
 If setup fails, fix setup before writing feature code. A broken local loop makes every later result suspect.
@@ -42,18 +43,18 @@ Do not mix unrelated layers in one pull request unless the specification says th
 
 ## Day-to-day development commands
 
-Replace these placeholders with real commands.
-
 ```sh
-<install command>          # install dependencies
-<dev command>              # run the local development server
-<format command>           # format files
-<lint command>             # lint files
-<typecheck command>        # typecheck
-<unit test command>        # run unit tests
-<component test command>   # run component/browser tests
-<e2e command>              # run end-to-end tests
-<validate command>         # run the common ready check
+bun install              # install dependencies
+bun run dev              # run the local development server (Turbopack)
+bun run lint             # lint files (eslint)
+bun run typecheck        # typecheck (tsc --noEmit)
+bun run test             # run unit tests (vitest, jsdom)
+bunx playwright install chromium  # first-time browser setup
+bun run test:e2e         # run end-to-end tests (playwright-bdd, mock backend on :3099, dev server on :3001)
+bun run bddgen           # generate Playwright specs from e2e/features/*.feature
+bun run test:all         # run both vitest + playwright
+bun run validate         # run the common ready check (typecheck + lint)
+bun run build            # production build (next build)
 ```
 
 Keep commands deterministic. If a command needs external services, document the service and the expected local URL.
@@ -113,12 +114,13 @@ Do not say a mode passed unless you ran it. If a mode is unavailable locally, re
 Before marking work ready:
 
 - [ ] The change has an issue, task, or written reason.
-- [ ] User-visible or cross-workspace behaviour has a specification.
+- [ ] User-visible or cross-workspace behaviour has a specification (`openspec/changes/`).
 - [ ] Non-obvious technical choices have an ADR.
-- [ ] Tests cover the claim at the right layer.
-- [ ] Static checks and guards pass.
-- [ ] Documentation no longer describes shipped work as planned.
-- [ ] Migrations and rollout steps are documented.
+- [ ] Tests cover the claim at the right layer (`bun run test` for logic; e2e slice for user flows).
+- [ ] Static checks and guards pass (`bun run validate`).
+- [ ] Documentation no longer describes shipped work as planned — `docs/`, `README.md`, `CONTEXT.md` updated in the same change when they describe changed behaviour (or an explicit N/A is recorded).
+- [ ] The e2e slice for the changed flow has been run (`bun run test:e2e <slice>`), with the slice name, result, and skips recorded in the PR body or `verification.md`.
+- [ ] Migrations and rollout steps are documented (N/A: no database in this repo).
 - [ ] Security-sensitive changes had a security review.
 - [ ] The PR description lists commands run and results.
 

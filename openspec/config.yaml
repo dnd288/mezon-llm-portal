@@ -13,19 +13,25 @@
 schema: cross-cutting
 
 context: |
-  This is a template OpenSpec configuration for your project. Replace this
-  context with the product, architecture, and workflow facts that every change
-  proposal needs.
+  Mezon LLM Portal — Next.js 16 frontend-only customer portal for the
+  mezon-llm (new-api) Go backend at `~/src/mezon-llm`.
 
   Route to the owner rather than re-deriving:
-  - Product requirements: cite requirement identifiers from your product
-    requirements document. Do not invent requirement IDs in a change.
-  - Scope: cite the document that freezes what is in and out of scope.
-  - Open questions: name unresolved questions that block or shape the change.
-  - Decisions: hard-to-reverse technical choices belong in decision records.
-  - Engineering rules: cite your conventions, security model, state model,
-    testing strategy, and package/workspace boundaries.
-  - Build procedure: cite the command or workflow that proves a change is ready.
+  - Product requirements: cite FR- identifiers from `docs/product/prd.md`. Do
+    not invent requirement IDs in a change.
+  - Scope: `docs/product/open-questions.md` freezes what is in and out of scope.
+  - Open questions: OQ2–OQ4 gate upcoming changes (see `docs/product/open-questions.md`).
+  - Decisions: `docs/adr/` for hard-to-reverse technical choices.
+  - Engineering rules: `AGENTS.md` for boundaries, testing strategy, and state
+    placement. `docs/engineering/authentication.md` for session/auth. `docs/engineering/backend-api.md`
+    for API boundary. `docs/engineering/testing.md` for test modes and per-change proof.
+  - Build procedure: `bun run validate` (typecheck + lint), `bun run test` (vitest jsdom),
+    `bun run test:e2e` (Playwright BDD with Gherkin features under `e2e/features/`).
+
+  Key boundaries: Server Components in `src/app/(portal)/`; Client Components in
+  `src/components/`; API proxy routes in `src/app/api/`; single gateway `src/lib/api.ts`;
+  shadcn/ui v5 (`src/components/ui/`); no Go code, no database, no backend logic in
+  this repo.
 
   Define the constraints that shape most specifications in this project: route
   prefixes, package boundaries, data ownership, session/authentication topology,
@@ -45,6 +51,10 @@ rules:
     - >-
       State which release phase, milestone, issue, or roadmap slice this change
       belongs to, if the project tracks one.
+    - >-
+      Name which documentation (`docs/engineering/*.md`, `README.md`, `CONTEXT.md`,
+      or living specs) must be updated if this change ships. A proposal that
+      ships behaviour its docs describe in the old terms is half-finished.
   specs:
     - >-
       Scenarios are acceptance criteria and should become tests. Write them so a
@@ -159,3 +169,13 @@ rules:
     - >-
       State what remains unproven. A lower-level check for a user-visible
       symptom may be useful but still leaves an explicit gap.
+    - >-
+      Name which documentation (`docs/`, `README.md`, `CONTEXT.md`, or living
+      specs) was updated for this change, or state why no doc change was
+      needed. A doc describing shipped behaviour in the old terms is a stale
+      doc — the verifier should flag it.
+    - >-
+      Name which e2e slice (`e2e/features/*.feature`) ran for this change, by
+      selection. If the change required no e2e (docs-only, copy-only), state
+      that explicitly. "Started and killed" is unrun; a run that produced no
+      verdict is not evidence.
