@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getSession } from "@/lib/auth";
+import { getSession, isBackendTokenExpiring } from "@/lib/auth";
 import { getSelf } from "@/lib/api";
 import { formatQuota } from "@/lib/quota";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,6 +73,9 @@ export OPENAI_BASE_URL="https://llm.mrdnd.dev/v1"
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
+  if (isBackendTokenExpiring(session)) {
+    redirect("/api/auth/refresh?next=/dashboard");
+  }
 
   let user;
 

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
 import { redeemVoucher } from "@/lib/api";
+import { getRouteBackendSession, jsonWithOptionalSessionCookie } from "@/lib/route-auth";
 
 export async function POST(request: Request) {
-  const session = await getSession();
-  if (!session) {
+  const backend = await getRouteBackendSession();
+  if (!backend) {
     return NextResponse.json(
       { success: false, error: "Chưa đăng nhập" },
       { status: 401 },
@@ -31,12 +31,16 @@ export async function POST(request: Request) {
 
   try {
     const result = await redeemVoucher(key, {
-      accessToken: session.backendAccessToken,
+      accessToken: backend.session.backendAccessToken,
     });
-    return NextResponse.json({
-      success: true,
-      data: { message: result.message, quota: result.quota },
-    });
+    return jsonWithOptionalSessionCookie(
+      {
+        success: true,
+        data: { message: result.message, quota: result.quota },
+      },
+      undefined,
+      backend.sessionToken,
+    );
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Mã voucher không hợp lệ";

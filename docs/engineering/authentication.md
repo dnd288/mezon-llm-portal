@@ -52,9 +52,9 @@ The admin token (`NEW_API_ADMIN_TOKEN`) is used **only** on the sync path. It ne
 | Signing | `jose` HS256, `JWT_SECRET` |
 | Lifetime | `SESSION_MAX_AGE` (default 86400s = 24h) |
 | Flags | httpOnly, SameSite=Lax, `secure` in production, path `/` |
-| Claims | `userId` (new-api numeric id), `accessToken` (Mezon OAuth token — userinfo only), `backendAccessToken` (new-api session token — authorizes all user-scoped calls), `backendExpiresAt`, `username`, `mezonUserId` |
+| Claims | `userId` (new-api numeric id), `accessToken` (Mezon OAuth token — userinfo only), `backendUsername`, `backendAccessToken` (new-api session token — authorizes all user-scoped calls), `backendExpiresAt`, `username`, `mezonUserId` |
 
-All new-api calls from pages and `/api/portal/*` routes pass `backendAccessToken`. If the backend session expires before the portal cookie, affected calls fail softly (empty data) or 401 — re-login mints a fresh one.
+All new-api calls from pages and `/api/portal/*` routes pass `backendAccessToken`. When the backend token is missing, expired, or within the refresh skew, Portal re-logins to new-api server-side with the deterministic sync password, issues a new Portal session cookie, and keeps browser credentials unchanged.
 
 ## Route protection — two layers
 
@@ -106,4 +106,4 @@ session).
 ## Hardening backlog
 
 - OQ4: session-bound `state` + timing-safe compare.
-- Consider token refresh / rotation; the callback currently stores the Mezon OAuth access token in the portal session for the session lifetime (24h default).
+- Consider Mezon OAuth token rotation; the callback currently stores the Mezon OAuth access token in the portal session for the session lifetime (24h default).

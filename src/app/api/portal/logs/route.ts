@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
 import { getUserLogs } from "@/lib/api";
+import { getRouteBackendSession, jsonWithOptionalSessionCookie } from "@/lib/route-auth";
 
 export async function GET(request: Request) {
-  const session = await getSession();
-  if (!session) {
+  const backend = await getRouteBackendSession();
+  if (!backend) {
     return NextResponse.json(
       { success: false, error: "Chưa đăng nhập" },
       { status: 401 },
@@ -17,15 +17,19 @@ export async function GET(request: Request) {
 
   try {
     const result = await getUserLogs({
-      accessToken: session.backendAccessToken,
+      accessToken: backend.session.backendAccessToken,
       page,
       size,
     });
-    return NextResponse.json({
-      success: true,
-      data: result.data,
-      total: result.total,
-    });
+    return jsonWithOptionalSessionCookie(
+      {
+        success: true,
+        data: result.data,
+        total: result.total,
+      },
+      undefined,
+      backend.sessionToken,
+    );
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Không thể tải nhật ký";

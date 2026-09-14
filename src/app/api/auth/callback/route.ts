@@ -3,6 +3,7 @@ import {
   createSession,
   sessionCookieOptions,
 } from "@/lib/auth";
+import { getBackendUsernameCandidates } from "@/lib/backend-identity";
 import {
   type AdminUserSummary,
   adminSearchUsers,
@@ -38,35 +39,6 @@ interface MezonUserInfo {
   email?: string;
   name?: string;
   preferred_username?: string;
-}
-
-// new-api caps Username at 20 chars (model/user.go). The portal anchors a
-// Mezon identity to a new-api account in this order:
-//   1. The Mezon username itself (`duong.nguyen`) when it satisfies new-api
-//      constraints — attaches to accounts the team created by hand.
-//   2. `mezon_<user_id>` when it fits (legacy short-id accounts).
-//   3. A deterministic `mz_<sha256-user_id>` fallback.
-const NEW_API_USERNAME_MAX = 20;
-const NEW_API_USERNAME_RE = /^[a-zA-Z0-9._-]+$/;
-
-function isUsableNewApiUsername(name: string): boolean {
-  return (
-    name.length > 0 &&
-    name.length <= NEW_API_USERNAME_MAX &&
-    NEW_API_USERNAME_RE.test(name)
-  );
-}
-
-async function hashUsername(mezonUserId: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(mezonUserId),
-  );
-  const hash = [...new Uint8Array(digest)]
-    .map((b) => b.toString(36))
-    .join("")
-    .slice(0, NEW_API_USERNAME_MAX - 3);
-  return `mz_${hash}`;
 }
 
 export async function GET(request: NextRequest) {
@@ -157,13 +129,7 @@ export async function GET(request: NextRequest) {
     // tried in anchor order; the first exact match adopts that account.
     let newApiUserId: number | null = null;
     let backendUsername = "";
-    const mezonHandle = username === `user_${mezonUserId}` ? "" : username;
-    const idDerived = `mezon_${mezonUserId}`;
-    const candidates = [
-      ...(isUsableNewApiUsername(mezonHandle) ? [mezonHandle] : []),
-      ...(isUsableNewApiUsername(idDerived) ? [idDerived] : []),
-      await hashUsername(mezonUserId),
-    ];
+    const candidates = await getBackendUsernameCandidates(username, mezonUserId);
 
     if (NEW_API_ADMIN_TOKEN) {
       let adopted: AdminUserSummary | undefined;
@@ -272,6 +238,7 @@ export async function GET(request: NextRequest) {
     const sessionToken = await createSession({
       userId: newApiUserId,
       accessToken: mezonAccessToken,
+      backendUsername,
       backendAccessToken: backendSession.accessToken,
       backendExpiresAt: backendSession.expiresAt,
       username,

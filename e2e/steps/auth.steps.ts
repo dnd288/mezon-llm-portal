@@ -8,7 +8,9 @@ async function createExpiredMockToken(): Promise<string> {
   return new SignJWT({
     userId: 9999,
     accessToken: "expired_token",
+    backendUsername: "test_developer",
     backendAccessToken: "expired_token",
+    backendExpiresAt: Math.floor(Date.now() / 1000) - 3600,
     username: "test_developer",
     mezonUserId: "123456",
   })

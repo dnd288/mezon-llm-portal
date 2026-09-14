@@ -8,6 +8,7 @@ export interface MockUserOptions {
   username?: string;
   mezonUserId?: string;
   backendAccessToken?: string;
+  backendExpiresAt?: number;
 }
 
 export async function createMockSessionToken(
@@ -20,10 +21,13 @@ export async function createMockSessionToken(
   const payload = {
     userId: options?.userId ?? 9999,
     accessToken: "mock_mezon_access_token",
+    backendUsername: options?.username ?? "test_developer",
     backendAccessToken:
       options?.backendAccessToken ||
       process.env.NEW_API_TEST_TOKEN ||
       "mock_backend_access_token",
+    backendExpiresAt:
+      options?.backendExpiresAt ?? Math.floor(Date.now() / 1000) + 3600,
     username: options?.username ?? "test_developer",
     mezonUserId: options?.mezonUserId ?? "123456",
   };

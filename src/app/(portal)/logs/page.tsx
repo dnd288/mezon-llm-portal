@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth";
+import { getSession, isBackendTokenExpiring } from "@/lib/auth";
 import { getUserLogs } from "@/lib/api";
 import { formatDate, formatQuota, formatTokens, formatDuration } from "@/lib/quota";
 import {
@@ -28,6 +28,10 @@ export default async function LogsPage({
 
   const { page } = await searchParams;
   const currentPage = Math.max(1, Number(page) || 1);
+  if (isBackendTokenExpiring(session)) {
+    const next = currentPage > 1 ? `/logs?page=${currentPage}` : "/logs";
+    redirect(`/api/auth/refresh?next=${encodeURIComponent(next)}`);
+  }
   const apiPage = currentPage - 1; // API is 0-indexed
 
   let logsData;

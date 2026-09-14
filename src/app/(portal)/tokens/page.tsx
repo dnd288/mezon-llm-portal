@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { Key } from "lucide-react";
 
-import { getSession } from "@/lib/auth";
+import { getSession, isBackendTokenExpiring } from "@/lib/auth";
 import { getTokens } from "@/lib/api";
 import { formatQuota, formatDate } from "@/lib/quota";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,9 @@ export default async function TokensPage() {
   const session = await getSession();
   if (!session) {
     redirect("/login");
+  }
+  if (isBackendTokenExpiring(session)) {
+    redirect("/api/auth/refresh?next=/tokens");
   }
 
   let tokens: Awaited<ReturnType<typeof getTokens>> = [];

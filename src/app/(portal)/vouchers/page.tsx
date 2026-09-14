@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth";
+import { getSession, isBackendTokenExpiring } from "@/lib/auth";
 import { getUserLogs, type LogEntry } from "@/lib/api";
 import { formatDate, formatQuota } from "@/lib/quota";
 import { Gift } from "lucide-react";
@@ -71,6 +71,9 @@ function parseTopUp(content: string): ParsedTopUp {
 export default async function VouchersPage() {
   const session = await getSession();
   if (!session) redirect("/login");
+  if (isBackendTokenExpiring(session)) {
+    redirect("/api/auth/refresh?next=/vouchers");
+  }
 
   let logs: LogEntry[] = [];
   try {

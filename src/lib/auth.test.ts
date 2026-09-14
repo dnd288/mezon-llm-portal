@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
-import { createSession, verifySession, sessionCookieOptions } from "./auth";
+import { createSession, isBackendTokenExpiring, verifySession, sessionCookieOptions } from "./auth";
 import { deriveSyncPassword } from "./api";
 import { SignJWT } from "jose";
 
@@ -8,7 +8,9 @@ describe("Auth Library (src/lib/auth.ts)", () => {
   const mockPayload = {
     userId: 1234,
     accessToken: "mezon_access_token_abc",
+    backendUsername: "john_doe",
     backendAccessToken: "backend_token_xyz",
+    backendExpiresAt: Math.floor(Date.now() / 1000) + 3600,
     username: "john_doe",
     mezonUserId: "mezon_999",
   };
@@ -66,6 +68,13 @@ describe("Auth Library (src/lib/auth.ts)", () => {
     expect(options.sameSite).toBe("lax");
     expect(options.path).toBe("/");
     expect(options.maxAge).toBeGreaterThan(0);
+  });
+
+  it("detects backend tokens that need renewal", () => {
+    const now = 1_700_000_000_000;
+    expect(isBackendTokenExpiring({ backendExpiresAt: undefined }, now)).toBe(true);
+    expect(isBackendTokenExpiring({ backendExpiresAt: 1_700_000_100 }, now)).toBe(true);
+    expect(isBackendTokenExpiring({ backendExpiresAt: 1_700_000_600 }, now)).toBe(false);
   });
 });
 

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
-import { getTokens, createToken } from "@/lib/api";
+import { createToken, getTokens } from "@/lib/api";
+import { getRouteBackendSession, jsonWithOptionalSessionCookie } from "@/lib/route-auth";
 
 export async function GET() {
-  const session = await getSession();
-  if (!session) {
+  const backend = await getRouteBackendSession();
+  if (!backend) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
       { status: 401 },
@@ -12,8 +12,12 @@ export async function GET() {
   }
 
   try {
-    const tokens = await getTokens({ accessToken: session.backendAccessToken });
-    return NextResponse.json({ success: true, data: tokens });
+    const tokens = await getTokens({ accessToken: backend.session.backendAccessToken });
+    return jsonWithOptionalSessionCookie(
+      { success: true, data: tokens },
+      undefined,
+      backend.sessionToken,
+    );
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Không thể tải danh sách token";
@@ -25,8 +29,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await getSession();
-  if (!session) {
+  const backend = await getRouteBackendSession();
+  if (!backend) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
       { status: 401 },
@@ -56,10 +60,14 @@ export async function POST(request: Request) {
         remain_quota,
         unlimited_quota,
       },
-      { accessToken: session.backendAccessToken },
+      { accessToken: backend.session.backendAccessToken },
     );
 
-    return NextResponse.json({ success: true, data: token });
+    return jsonWithOptionalSessionCookie(
+      { success: true, data: token },
+      undefined,
+      backend.sessionToken,
+    );
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Không thể tạo token";

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
 import { deleteToken, getTokenKey } from "@/lib/api";
+import { getRouteBackendSession, jsonWithOptionalSessionCookie } from "@/lib/route-auth";
 
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getSession();
-  if (!session) {
+  const backend = await getRouteBackendSession();
+  if (!backend) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
       { status: 401 },
@@ -24,8 +24,12 @@ export async function DELETE(
   }
 
   try {
-    await deleteToken(tokenId, { accessToken: session.backendAccessToken });
-    return NextResponse.json({ success: true });
+    await deleteToken(tokenId, { accessToken: backend.session.backendAccessToken });
+    return jsonWithOptionalSessionCookie(
+      { success: true },
+      undefined,
+      backend.sessionToken,
+    );
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Không thể xóa token";
@@ -40,8 +44,8 @@ export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getSession();
-  if (!session) {
+  const backend = await getRouteBackendSession();
+  if (!backend) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
       { status: 401 },
@@ -59,9 +63,13 @@ export async function POST(
 
   try {
     const key = await getTokenKey(tokenId, {
-      accessToken: session.backendAccessToken,
+      accessToken: backend.session.backendAccessToken,
     });
-    return NextResponse.json({ success: true, data: key });
+    return jsonWithOptionalSessionCookie(
+      { success: true, data: key },
+      undefined,
+      backend.sessionToken,
+    );
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Không thể lấy key";
