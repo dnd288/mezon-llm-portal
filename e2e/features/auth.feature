@@ -34,3 +34,13 @@ Feature: Authentication Guard & Session Security
     Given I am logged in with a valid session
     When I visit "/login"
     Then I should be redirected to "/dashboard"
+
+  Scenario: Valid Mezon Channel App payload signs in
+    Given Mezon Channel App opens login with a valid signed payload
+    When the Channel App login completes
+    Then I should be redirected to "/dashboard"
+
+  Scenario: Invalid Mezon Channel App payload is refused
+    Given Mezon Channel App opens login with a tampered signed payload
+    When the Channel App login fails
+    Then I should see the Channel App login error
