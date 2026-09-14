@@ -62,7 +62,7 @@ export default defineConfig({
       timeout: 30 * 1000,
     },
     {
-      command: `PORT=${PORT} NEW_API_BASE_URL=http://localhost:${MOCK_PORT} bun run dev`,
+      command: `PORT=${PORT} NEW_API_BASE_URL=http://localhost:${MOCK_PORT} NEW_API_ADMIN_TOKEN=e2e-admin-token MEZON_APP_SECRET=e2e-channel-secret bun run dev`,
       url: BASE_URL,
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,

@@ -1,7 +1,9 @@
 // @vitest-environment node
+import { createHmac, createHash } from "crypto";
 import { describe, it, expect } from "vitest";
 import { createSession, isBackendTokenExpiring, verifySession, sessionCookieOptions } from "./auth";
 import { deriveSyncPassword } from "./api";
+import { validateMezonChannelAppData } from "./mezon-auth";
 import { SignJWT } from "jose";
 
 describe("Auth Library (src/lib/auth.ts)", () => {
@@ -90,5 +92,81 @@ describe("Deterministic Password Sync (deriveSyncPassword)", () => {
     const passA = await deriveSyncPassword("user_A");
     const passB = await deriveSyncPassword("user_B");
     expect(passA).not.toBe(passB);
+  });
+});
+
+describe("Mezon Channel App hash authentication", () => {
+  const appSecret = "test-channel-app-secret";
+  const now = 1_700_000_000;
+
+  function signedPayload(overrides: Record<string, string> = {}) {
+    const user = JSON.stringify({
+      id: 123456789,
+      username: "mezon_dev",
+      display_name: "Mezon Dev",
+      avatar_url: "https://cdn.mezon.ai/avatar.jpg",
+      mezon_id: "mezon.dev@ncc.asia",
+    });
+    const params = new URLSearchParams({
+      query_id: "AAHdF6UqAAAAAB0XpSoKhRAd",
+      user,
+      auth_date: String(now),
+      signature: "abc123def456",
+      ...overrides,
+    });
+    const queryData = [...params.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}=${value}`)
+      .join("&");
+    const hashedSecret = createHash("md5").update(appSecret).digest("hex");
+    const secretKey = createHmac("sha256", hashedSecret)
+      .update("WebAppData")
+      .digest();
+    const hash = createHmac("sha256", secretKey)
+      .update(queryData)
+      .digest("hex");
+    return `${queryData}&hash=${hash}`;
+  }
+
+  it("accepts a valid signed Channel App payload", () => {
+    const result = validateMezonChannelAppData(appSecret, signedPayload(), now);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.user).toEqual({
+        id: "123456789",
+        username: "mezon_dev",
+        displayName: "Mezon Dev",
+        avatarUrl: "https://cdn.mezon.ai/avatar.jpg",
+        mezonId: "mezon.dev@ncc.asia",
+      });
+    }
+  });
+
+  it("rejects a tampered Channel App signature", () => {
+    const payload = signedPayload().replace("mezon_dev", "attacker");
+
+    expect(validateMezonChannelAppData(appSecret, payload, now)).toEqual({
+      ok: false,
+      error: "invalid_hash_signature",
+    });
+  });
+
+  it("rejects stale Channel App payloads", () => {
+    const payload = signedPayload({ auth_date: String(now - 90_000) });
+
+    expect(validateMezonChannelAppData(appSecret, payload, now)).toEqual({
+      ok: false,
+      error: "stale_hash_data",
+    });
+  });
+
+  it("rejects malformed Channel App user data", () => {
+    const payload = signedPayload({ user: JSON.stringify({ username: "missing_id" }) });
+
+    expect(validateMezonChannelAppData(appSecret, payload, now)).toEqual({
+      ok: false,
+      error: "invalid_user",
+    });
   });
 });

@@ -303,6 +303,48 @@ const server = Bun.serve({
       return json({ success: true, message: "State set" });
     }
 
+    if (method === "GET" && path === "/api/user/search") {
+      const keyword = url.searchParams.get("keyword") || "";
+      const items = user.username === keyword ? [user] : [];
+      return json({ success: true, data: { items, page: 1, page_size: 10, total: items.length } });
+    }
+
+    if (method === "POST" && path === "/api/user/") {
+      const body = (await req.json().catch(() => ({}))) as {
+        username?: string;
+        display_name?: string;
+      };
+      user = {
+        ...initialUser,
+        username: body.username || initialUser.username,
+        display_name: body.display_name || body.username || initialUser.display_name,
+      };
+      return json({ success: true, message: "Created" });
+    }
+
+    if (method === "PUT" && path === "/api/user/") {
+      const body = (await req.json().catch(() => ({}))) as {
+        username?: string;
+        display_name?: string;
+      };
+      user = {
+        ...user,
+        username: body.username || user.username,
+        display_name: body.display_name || user.display_name,
+      };
+      return json({ success: true, message: "Updated" });
+    }
+
+    if (method === "POST" && path === "/api/user/login") {
+      return json({
+        success: true,
+        data: {
+          access_token: "mock-backend-session-token",
+          access_expires_at: Math.floor(Date.now() / 1000) + 86400,
+        },
+      });
+    }
+
     // GET /api/user/self
     if (method === "GET" && path === "/api/user/self") {
       if (isGatewayError) {

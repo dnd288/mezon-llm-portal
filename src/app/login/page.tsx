@@ -2,8 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ChannelAppLogin } from "@/components/channel-app-login";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ data?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const channelAppData = Array.isArray(params.data) ? params.data[0] : params.data;
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4">
       <div className="relative w-full max-w-md overflow-hidden rounded-[var(--r)] border border-[var(--bd)] bg-[var(--surfS)] px-7 py-11 text-center" style={{ boxShadow: "var(--shadow)" }}>
@@ -68,6 +75,7 @@ export default function LoginPage() {
             />
           </Link>
         </div>
+        <ChannelAppLogin hashData={channelAppData} />
 
         {/* Helper text */}
         <p className="relative mt-4 text-[11.5px] text-[var(--mut)]">

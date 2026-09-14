@@ -1,6 +1,6 @@
 # Authentication
 
-Mezon OAuth 2.0 → JWT session → new-api user. Requirements: [FR-1](../product/prd.md), [FR-7](../product/prd.md).
+Mezon OAuth 2.0 or Mezon Channel App hash auth → JWT session → new-api user. Requirements: [FR-1](../product/prd.md), [FR-7](../product/prd.md).
 
 ## Flow
 
@@ -23,11 +23,31 @@ User ─▶ /login page ─▶ GET /api/auth/login
                     302 ─▶ /dashboard
 ```
 
+Channel App login uses the same session target without an OAuth redirect:
+
+```
+User ─▶ Mezon Channel App ─▶ /login?data=<signed hash payload>
+                               │ client leaf posts payload only
+                               ▼
+                         POST /api/auth/channel-app
+                               │ decodes base64 payload
+                               │ verifies MD5(app secret) + HMAC-SHA256 hash
+                               │ rejects stale auth_date
+                               │ parses user identity
+                               │ user sync (same rules below)
+                               │ signs session JWT
+                               ▼
+                         Set-Cookie session (httpOnly, SameSite=Lax, secure in prod)
+                         JSON redirectTo=/dashboard
+```
+
+Direct server entry is also supported at `GET /api/auth/channel-app?data=<base64 payload>` for environments that prefer redirect-only handoff.
+
 Logout: `GET /api/auth/logout` clears the session cookie. Session introspection: `GET /api/auth/session` → `{userId, username, mezonUserId}` or 401.
 
 ## User sync and backend credentials
 
-Callback exchanges the Mezon identity for a new-api user, then mints a backend login session:
+OAuth callback and Channel App auth both exchange a verified Mezon identity for a new-api user, then mint a backend login session:
 
 1. Build candidate new-api usernames in anchor order:
    - the **Mezon username** (`duong.nguyen`) when it fits new-api's 20-char + charset constraints — attaches to hand-created team accounts;
@@ -42,7 +62,7 @@ Callback exchanges the Mezon identity for a new-api user, then mints a backend l
 
 **Adoption takes over credentials.** When a Mezon username matches a hand-created new-api account, the deterministic sync password replaces that account's old password — direct backend logins then require the admin to reset it. This is the linking mechanism, documented deliberately.
 
-The admin token (`NEW_API_ADMIN_TOKEN`) is used **only** on the sync path. It never appears in a response, log, or client payload.
+The admin token (`NEW_API_ADMIN_TOKEN`) is used **only** on the sync path. `MEZON_CLIENT_SECRET`, `MEZON_APP_SECRET`, `JWT_SECRET`, backend session tokens, and admin tokens never appear in a response, log, or client payload.
 
 ## Session cookie
 
@@ -69,19 +89,21 @@ Note `/models` is public and unguarded (FR-2.2); `/vouchers` is guarded.
 
 | Failure | Behavior |
 |---|---|
-| Missing/incorrect `state` | Redirect `/login?error=invalid_state` |
-| Missing `code` | Redirect `/login?error=missing_code` |
-| Env not configured (client id/secret/redirect) | Redirect `/login?error=oauth_not_configured` |
-| Token exchange | Redirect `/login?error=token_exchange_failed` |
-| Userinfo | Redirect `/login?error=userinfo_failed` |
-| User sync | Redirect `/login?error=user_sync_failed` |
-| Backend login after sync | Redirect `/login?error=backend_login_failed` |
+| Missing/incorrect OAuth `state` | Redirect `/login?error=invalid_state` |
+| Missing OAuth `code` | Redirect `/login?error=missing_code` |
+| OAuth env not configured (client id/secret/redirect) | Redirect `/login?error=oauth_not_configured` |
+| OAuth token exchange | Redirect `/login?error=token_exchange_failed` |
+| OAuth userinfo | Redirect `/login?error=userinfo_failed` |
+| Channel App env not configured (`MEZON_APP_SECRET`, falling back to `MEZON_CLIENT_SECRET`) | 500 JSON `channel_app_not_configured` |
+| Channel App payload missing/malformed/stale/tampered | 400/401 JSON error; login page displays Channel App failure and keeps OAuth login available |
+| User sync | Redirect `/login?error=user_sync_failed` or 500 JSON `user_sync_failed` |
+| Backend login after sync | Redirect `/login?error=user_sync_failed` or 500 JSON `user_sync_failed` |
 | Unexpected callback error | Redirect `/login?error=internal_error` |
 | Expired/tampered session cookie | `getSession()` → null → page redirects to login; middleware alone would pass presence |
 
 ## Environment
 
-See `.env.example`. All of: `MEZON_CLIENT_ID`, `MEZON_CLIENT_SECRET`, `MEZON_REDIRECT_URI`, `MEZON_AUTH_URL`, `MEZON_TOKEN_URL`, `MEZON_USERINFO_URL`, `NEW_API_BASE_URL`, `NEW_API_ADMIN_TOKEN`, `NEW_API_SYNC_SECRET` (optional — falls back to `JWT_SECRET`), `JWT_SECRET`, `SESSION_MAX_AGE`.
+See `.env.example`. All of: `MEZON_CLIENT_ID`, `MEZON_CLIENT_SECRET`, `MEZON_APP_SECRET` (Channel App hash verification; falls back to `MEZON_CLIENT_SECRET` for compatible deployments), `MEZON_REDIRECT_URI`, `MEZON_AUTH_URL`, `MEZON_TOKEN_URL`, `MEZON_USERINFO_URL`, `NEW_API_BASE_URL`, `NEW_API_ADMIN_TOKEN`, `NEW_API_SYNC_SECRET` (optional — falls back to `JWT_SECRET`), `JWT_SECRET`, `SESSION_MAX_AGE`. Optional: `MEZON_CHANNEL_APP_AUTH_MAX_AGE_SECONDS` (default 86400).
 
 ## Userinfo claims (Mezon mapping)
 
