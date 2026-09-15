@@ -39,11 +39,12 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { name, expired_time, remain_quota, unlimited_quota } = body as {
+    const { name, expired_time, remain_quota, unlimited_quota, group } = body as {
       name?: string;
       expired_time?: number;
       remain_quota?: number;
       unlimited_quota?: boolean;
+      group?: string;
     };
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
         expired_time,
         remain_quota,
         unlimited_quota,
+        group: typeof group === "string" && group.trim() ? group.trim() : undefined,
       },
       { accessToken: backend.session.backendAccessToken },
     );

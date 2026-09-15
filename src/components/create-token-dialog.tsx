@@ -32,12 +32,24 @@ const EXPIRY_OPTIONS = [
   { value: "unlimited", label: "Không giới hạn" },
 ] as const;
 
-export function CreateTokenDialog() {
+function uniqueGroups(groups: string[] = []) {
+  const normalized = ["default", ...groups.map((candidate) => candidate.trim()).filter(Boolean)];
+  return normalized.filter((candidate, index) => normalized.indexOf(candidate) === index);
+}
+
+export interface CreateTokenDialogProps {
+  availableGroups?: string[];
+}
+
+
+export function CreateTokenDialog({ availableGroups }: CreateTokenDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [expiry, setExpiry] = useState<string>("30");
   const [quota, setQuota] = useState("");
+  const groups = uniqueGroups(availableGroups);
+  const [group, setGroup] = useState(groups[0] ?? "default");
   const [loading, setLoading] = useState(false);
   const [createdKey, setCreatedKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -46,6 +58,7 @@ export function CreateTokenDialog() {
     setName("");
     setExpiry("30");
     setQuota("");
+    setGroup(groups[0] ?? "default");
     setCreatedKey(null);
     setCopied(false);
   };
@@ -80,6 +93,7 @@ export function CreateTokenDialog() {
           expired_time: expiredTime,
           remain_quota: quota ? Number(quota) : undefined,
           unlimited_quota: !quota,
+          group,
         }),
       });
 
@@ -216,6 +230,27 @@ export function CreateTokenDialog() {
                     {EXPIRY_OPTIONS.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="token-group">Group</Label>
+                <Select
+                  value={group}
+                  onValueChange={(value) => {
+                    if (value) setGroup(value);
+                  }}
+                  disabled={loading}
+                >
+                  <SelectTrigger id="token-group" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {groups.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
                       </SelectItem>
                     ))}
                   </SelectContent>
