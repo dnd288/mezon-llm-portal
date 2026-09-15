@@ -82,7 +82,7 @@ export function CreateTokenDialog({ availableGroups }: CreateTokenDialogProps) {
     try {
       const expiredTime =
         expiry === "unlimited"
-          ? undefined
+          ? -1
           : Math.floor(Date.now() / 1000) + Number(expiry) * 86400;
 
       const res = await fetch("/api/portal/tokens", {

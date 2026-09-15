@@ -129,15 +129,28 @@ export async function createToken(
   payload: CreateTokenPayload,
   opts: ApiOptions,
 ): Promise<Token> {
-  const res = await request<{ success: boolean; data: Token }>(
+  const body = {
+    group: "default",
+    ...payload,
+    expired_time: payload.expired_time ?? -1,
+  };
+  await request<{ success: boolean; data?: Token; message?: string }>(
     "/api/token/",
     {
       ...opts,
       method: "POST",
-      body: JSON.stringify({ group: "default", ...payload }),
+      body: JSON.stringify(body),
     },
   );
-  return res.data;
+
+  // new-api returns { success: true, message: "" } without the token entity.
+  // Query the user's tokens to return the newly created token with its generated ID.
+  const tokens = await getTokens(opts);
+  const created = tokens.find((t) => t.name === payload.name) ?? tokens[0];
+  if (!created) {
+    throw new Error("Không tìm thấy thông tin token sau khi tạo");
+  }
+  return created;
 }
 
 export async function deleteToken(
@@ -151,11 +164,17 @@ export async function getTokenKey(
   id: number,
   opts: ApiOptions,
 ): Promise<string> {
-  const res = await request<{ success: boolean; data: string }>(
+  const res = await request<{
+    success: boolean;
+    data: string | { key: string };
+  }>(
     `/api/token/${id}/key`,
     { ...opts, method: "POST" },
   );
-  return res.data;
+  if (typeof res.data === "object" && res.data !== null && "key" in res.data) {
+    return res.data.key;
+  }
+  return res.data as string;
 }
 
 // ──────────────────────────────────────────────
