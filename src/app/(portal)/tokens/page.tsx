@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { Key } from "lucide-react";
 
 import { getSession, isBackendTokenExpiring } from "@/lib/auth";
-import { getTokens } from "@/lib/api";
+import { getSelf, getTokens } from "@/lib/api";
 import { formatQuota, formatDate } from "@/lib/quota";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/page-header";
@@ -48,9 +48,23 @@ export default async function TokensPage() {
 
   let tokens: Awaited<ReturnType<typeof getTokens>> = [];
   let error: string | null = null;
+  let userGroup: string | undefined;
 
   try {
-    tokens = await getTokens({ accessToken: session.backendAccessToken });
+    const [tokensResult, selfResult] = await Promise.allSettled([
+      getTokens({ accessToken: session.backendAccessToken }),
+      getSelf({ accessToken: session.backendAccessToken }),
+    ]);
+
+    if (tokensResult.status === "fulfilled") {
+      tokens = tokensResult.value;
+    } else {
+      error = tokensResult.reason instanceof Error ? tokensResult.reason.message : "Không thể tải danh sách key";
+    }
+
+    if (selfResult.status === "fulfilled") {
+      userGroup = selfResult.value.group;
+    }
   } catch (err) {
     error = err instanceof Error ? err.message : "Không thể tải danh sách key";
   }
@@ -61,7 +75,7 @@ export default async function TokensPage() {
         title="API Keys"
         subtitle="Quản lý các API key để truy cập Mezon LLM."
       >
-        <CreateTokenDialog />
+        <CreateTokenDialog availableGroups={userGroup ? [userGroup] : undefined} />
       </PageHeader>
 
       {error ? (

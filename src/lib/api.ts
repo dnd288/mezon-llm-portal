@@ -111,6 +111,7 @@ export interface CreateTokenPayload {
   unlimited_quota?: boolean;
   models?: string[];
   subnet?: string;
+  group?: string;
 }
 
 export async function getTokens(opts: ApiOptions): Promise<Token[]> {
@@ -130,7 +131,11 @@ export async function createToken(
 ): Promise<Token> {
   const res = await request<{ success: boolean; data: Token }>(
     "/api/token/",
-    { ...opts, method: "POST", body: JSON.stringify(payload) },
+    {
+      ...opts,
+      method: "POST",
+      body: JSON.stringify({ group: "default", ...payload }),
+    },
   );
   return res.data;
 }

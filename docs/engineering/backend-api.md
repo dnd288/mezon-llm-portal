@@ -17,7 +17,7 @@ What `src/lib/api.ts` consumes. Base URL: `NEW_API_BASE_URL` (default `https://l
 | Function | Endpoint | Notes |
 |---|---|---|
 | `getTokens` | `GET /api/token/?page_size=100` | **Paginated envelope**: backend returns `{data: {items, page, page_size, total}}`; `api.ts` unwraps to `Token[]` via `res.data?.items ?? []` |
-| `createToken` | `POST /api/token/` | payload: name, expired_time, remain_quota, unlimited_quota |
+| `createToken` | `POST /api/token/` | payload: name, expired_time, remain_quota, unlimited_quota, group (`api.ts` defaults to `"default"`) |
 | `deleteToken` | `DELETE /api/token/:id` | revoke |
 | `getTokenKey` | `POST /api/token/:id/key` | returns raw `sk-...`; requested by the creation dialog immediately after creation |
 
