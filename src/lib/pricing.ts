@@ -2,8 +2,18 @@ import type { PricingModel } from "./api";
 
 /**
  * Conversion rate: in new-api / Mezon LLM, 1 USD = 500,000 quota (mzđ).
+ * Used for USD-denominated amounts (such as pay-per-request model_price
+ * and tiered expression billing rates $/1M).
  */
 export const QUOTA_PER_USD = 500_000;
+
+/**
+ * Standard token models (quota_type: 0) charge quota per token directly:
+ *   quota = tokens * model_ratio * group_ratio
+ * Since 1 quota = 1 mzđ, 1,000,000 tokens consume:
+ *   1,000,000 * model_ratio mzđ
+ */
+export const TOKENS_PER_MILLION = 1_000_000;
 
 export type ParsedTierPricing =
   | { type: "request"; price: number }
@@ -151,9 +161,9 @@ export function resolveModelPricing(
 
   return {
     priceUnit: "per-million-tokens",
-    inputPrice: formatMznd(model.model_ratio * QUOTA_PER_USD),
+    inputPrice: formatMznd(model.model_ratio * TOKENS_PER_MILLION),
     outputPrice: formatMznd(
-      model.model_ratio * model.completion_ratio * QUOTA_PER_USD,
+      model.model_ratio * model.completion_ratio * TOKENS_PER_MILLION,
     ),
   };
 }
