@@ -93,21 +93,20 @@ describe("parseTierExpr", () => {
 });
 
 describe("formatMznd", () => {
-  it("formats numbers in millions with M suffix", () => {
-    expect(formatMznd(1_250_000)).toBe("1.25M");
-    expect(formatMznd(18_750_000)).toBe("18.75M");
-  });
-
-  it("formats numbers in thousands with K suffix", () => {
-    expect(formatMznd(40_000)).toBe("40.0K");
-    expect(formatMznd(200_000)).toBe("200.0K");
-    expect(formatMznd(20_000)).toBe("20.0K");
-    expect(formatMznd(1_000)).toBe("1.0K");
+  it("formats large numbers with commas", () => {
+    expect(formatMznd(1_250_000)).toBe("1,250,000");
+    expect(formatMznd(200_000)).toBe("200,000");
+    expect(formatMznd(40_000)).toBe("40,000");
+    expect(formatMznd(22_500)).toBe("22,500");
+    expect(formatMznd(4_500)).toBe("4,500");
+    expect(formatMznd(2_000)).toBe("2,000");
+    expect(formatMznd(1_000)).toBe("1,000");
   });
 
   it("formats small numbers with locale string", () => {
     expect(formatMznd(20)).toBe("20");
     expect(formatMznd(375)).toBe("375");
+    expect(formatMznd(750)).toBe("750");
   });
 
   it("returns dash for non-positive or non-finite numbers", () => {
@@ -132,8 +131,8 @@ describe("resolveModelPricing", () => {
     const resolution = resolveModelPricing(model);
     expect(resolution).toEqual({
       priceUnit: "per-million-tokens",
-      inputPrice: "40.0K",
-      outputPrice: "200.0K",
+      inputPrice: "40,000",
+      outputPrice: "200,000",
     });
   });
 
@@ -149,8 +148,26 @@ describe("resolveModelPricing", () => {
     const resolution = resolveModelPricing(model);
     expect(resolution).toEqual({
       priceUnit: "per-million-tokens",
-      inputPrice: "20.0K",
-      outputPrice: "100.0K",
+      inputPrice: "20,000",
+      outputPrice: "100,000",
+    });
+  });
+
+  it("resolves claude-opus-4-8 from billing_expr accurately", () => {
+    const model = {
+      quota_type: 0,
+      model_ratio: 0.005,
+      model_price: 0,
+      completion_ratio: 5,
+      billing_mode: "tiered_expr",
+      billing_expr: 'tier("base", p * 0.009 + c * 0.045)',
+    };
+
+    const resolution = resolveModelPricing(model);
+    expect(resolution).toEqual({
+      priceUnit: "per-million-tokens",
+      inputPrice: "4,500",
+      outputPrice: "22,500",
     });
   });
 
@@ -166,7 +183,7 @@ describe("resolveModelPricing", () => {
     const resolution = resolveModelPricing(model);
     expect(resolution).toEqual({
       priceUnit: "per-request",
-      inputPrice: "5.0K",
+      inputPrice: "5,000",
       outputPrice: "—",
     });
   });
@@ -187,7 +204,7 @@ describe("resolveModelPricing", () => {
     });
   });
 
-  it("resolves legacy token ratio models (quota_type === 0)", () => {
+  it("resolves standard token ratio models accurately (claude-sonnet-5)", () => {
     const model = {
       quota_type: 0,
       model_ratio: 0.002,
@@ -198,8 +215,34 @@ describe("resolveModelPricing", () => {
     const resolution = resolveModelPricing(model);
     expect(resolution).toEqual({
       priceUnit: "per-million-tokens",
-      inputPrice: "1.0K",
-      outputPrice: "5.0K",
+      inputPrice: "2,000",
+      outputPrice: "10,000",
+    });
+  });
+
+  it("resolves gpt-5.6-sol and glm-5.3 standard token ratio models accurately", () => {
+    const gpt5Sol = {
+      quota_type: 0,
+      model_ratio: 0.003,
+      model_price: 0,
+      completion_ratio: 5,
+    };
+    expect(resolveModelPricing(gpt5Sol)).toEqual({
+      priceUnit: "per-million-tokens",
+      inputPrice: "3,000",
+      outputPrice: "15,000",
+    });
+
+    const glm53 = {
+      quota_type: 0,
+      model_ratio: 0.00075,
+      model_price: 0,
+      completion_ratio: 2,
+    };
+    expect(resolveModelPricing(glm53)).toEqual({
+      priceUnit: "per-million-tokens",
+      inputPrice: "750",
+      outputPrice: "1,500",
     });
   });
 });
