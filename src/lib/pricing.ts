@@ -107,18 +107,12 @@ export function parseTierExpr(expr: string): ParsedTierPricing | null {
 
 /**
  * Formats an amount in mzđ (Mezon Đồng) for card display.
- * e.g.:
- * - 40,000 -> 40.0K
- * - 200,000 -> 200.0K
- * - 1,250,000 -> 1.25M
- * - 20 -> 20
- * - <= 0 or invalid -> —
+ * Uses standard comma separators matching the Mezon LLM console (e.g. 2,000, 10,000, 4,500, 22,500).
+ * Returns "—" for non-positive or invalid amounts.
  */
 export function formatMznd(amount: number | null | undefined): string {
   if (amount == null || !Number.isFinite(amount) || amount <= 0) return "—";
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(2)}M`;
-  if (amount >= 1_000) return `${(amount / 1_000).toFixed(1)}K`;
-  return amount.toLocaleString("vi-VN");
+  return amount.toLocaleString("en-US", { maximumFractionDigits: 2 });
 }
 
 /**
