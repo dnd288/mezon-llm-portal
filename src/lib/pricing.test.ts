@@ -187,7 +187,7 @@ describe("resolveModelPricing", () => {
     });
   });
 
-  it("resolves legacy token ratio models (quota_type === 0)", () => {
+  it("resolves standard token ratio models accurately (claude-sonnet-5)", () => {
     const model = {
       quota_type: 0,
       model_ratio: 0.002,
@@ -198,8 +198,34 @@ describe("resolveModelPricing", () => {
     const resolution = resolveModelPricing(model);
     expect(resolution).toEqual({
       priceUnit: "per-million-tokens",
-      inputPrice: "1.0K",
-      outputPrice: "5.0K",
+      inputPrice: "2.0K",
+      outputPrice: "10.0K",
+    });
+  });
+
+  it("resolves gpt-5.6-sol and glm-5.3 standard token ratio models accurately", () => {
+    const gpt5Sol = {
+      quota_type: 0,
+      model_ratio: 0.003,
+      model_price: 0,
+      completion_ratio: 5,
+    };
+    expect(resolveModelPricing(gpt5Sol)).toEqual({
+      priceUnit: "per-million-tokens",
+      inputPrice: "3.0K",
+      outputPrice: "15.0K",
+    });
+
+    const glm53 = {
+      quota_type: 0,
+      model_ratio: 0.00075,
+      model_price: 0,
+      completion_ratio: 2,
+    };
+    expect(resolveModelPricing(glm53)).toEqual({
+      priceUnit: "per-million-tokens",
+      inputPrice: "750",
+      outputPrice: "1.5K",
     });
   });
 });

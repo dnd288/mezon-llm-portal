@@ -50,7 +50,7 @@ Status semantics (portal rendering): `1` = Active; otherwise Revoked; `expired_t
 
 Price derivation (models page):
 - When `billing_expr` is present (tiered expression billing): parsed via `@/lib/pricing` to extract prompt rate `p`, completion rate `c`, or `fixed` request price. Coefficients in $/1M tokens or $/request convert to mzđ at 500,000 mzđ/USD (`p × 500_000`, `c × 500_000`, `fixed × 500_000`).
-- For standard token models (`quota_type: 0` without expression): mzđ per 1M tokens = `model_ratio × 500_000`; output uses `completion_ratio`.
+- For standard token models (`quota_type: 0` without expression): mzđ per 1M tokens = `model_ratio × 1_000_000`; output uses `completion_ratio` (in standard new-api token ratio billing, 1 prompt token costs `model_ratio` mzđ, so 1M tokens cost `model_ratio × 1_000_000` mzđ).
 - For per-request models (`quota_type: 1` without expression): backend price is USD per request (`model_price`), so the page converts it to mzđ per request as `model_price × 500_000` and leaves output as `—`.
 Health, latency, success rate, and TPS use the performance-metrics endpoint when present, with status probes as fallback. Uptime sparklines are not shown.
 
