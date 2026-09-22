@@ -327,6 +327,8 @@ export interface PricingModel {
   enable_groups?: string[];
   supported_endpoint_types?: string[];
   pricing_version?: string;
+  billing_mode?: string;
+  billing_expr?: string;
 }
 
 export async function getPricing(): Promise<PricingModel[]> {

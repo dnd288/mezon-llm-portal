@@ -210,6 +210,30 @@ const mockPricing = [
     owner_by: "deepseek",
     enable_groups: ["default"],
   },
+  {
+    model_name: "gpt-6-astra",
+    vendor_id: 1,
+    model_ratio: 0.04,
+    model_price: 0,
+    completion_ratio: 5.0,
+    quota_type: 0,
+    owner_by: "openai",
+    enable_groups: ["default"],
+    billing_mode: "tiered_expr",
+    billing_expr: 'tier("base", p * 0.08 + c * 0.4)',
+  },
+  {
+    model_name: "claude-fable-5-1",
+    vendor_id: 2,
+    model_ratio: 37.5,
+    model_price: 0,
+    completion_ratio: 1.0,
+    quota_type: 0,
+    owner_by: "anthropic",
+    enable_groups: ["default"],
+    billing_mode: "tiered_expr",
+    billing_expr: 'tier("base", p * 0.04 + c * 0.2)',
+  },
 ];
 
 const mockModelStatus = [

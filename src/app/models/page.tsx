@@ -8,6 +8,7 @@ import {
 } from "@/lib/api";
 import { buttonVariants } from "@/components/ui/button";
 import { ModelPricingGrid, type ModelPricingItem } from "@/components/model-pricing-grid";
+import { resolveModelPricing } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -46,24 +47,6 @@ function providerFor(model: {
     : (PROVIDERS[model.vendor_id] ?? UNKNOWN_PROVIDER);
 }
 
-const QUOTA_PER_MILLION_TOKENS = 500_000;
-
-function mzndPerMillionTokens(model: {
-  quota_type: number;
-  model_ratio: number;
-  model_price: number;
-}): string {
-  const quota =
-    model.quota_type === 1
-      ? model.model_price * QUOTA_PER_MILLION_TOKENS
-      : model.model_ratio * QUOTA_PER_MILLION_TOKENS;
-
-  if (!Number.isFinite(quota) || quota <= 0) return "—";
-  if (quota >= 1_000_000) return `${(quota / 1_000_000).toFixed(2)}M`;
-  if (quota >= 1_000) return `${(quota / 1_000).toFixed(1)}K`;
-  return quota.toLocaleString("vi-VN");
-}
-
 export default async function ModelsPage() {
   const [pricing, session, statuses, metrics] = await Promise.all([
     getPricing(),
@@ -93,6 +76,7 @@ export default async function ModelsPage() {
       const provider = providerFor(model);
       const successRate = metric?.success_rate ?? status?.success_rate ?? null;
       const alive = status?.probe.alive ?? true;
+      const resolvedPricing = resolveModelPricing(model);
       // Health from live traffic: ≥90% success = stable, ≥50% =
       // degraded, below that (or a failed probe) = error. No traffic
       // yet means the probe result alone decides.
@@ -109,18 +93,9 @@ export default async function ModelsPage() {
         provider: provider.name,
         providerLogoClassName: provider.logoClassName,
         providerLogoSrc: provider.logoSrc,
-        inputPrice: mzndPerMillionTokens(model),
-        priceUnit:
-          (model.quota_type === 1
-            ? "per-request"
-            : "per-million-tokens") as ModelPricingItem["priceUnit"],
-        outputPrice:
-          model.quota_type === 1
-            ? "—"
-            : mzndPerMillionTokens({
-                ...model,
-                model_ratio: model.model_ratio * model.completion_ratio,
-              }),
+        inputPrice: resolvedPricing.inputPrice,
+        priceUnit: resolvedPricing.priceUnit,
+        outputPrice: resolvedPricing.outputPrice,
         available: true,
         groups: model.enable_groups?.length ? model.enable_groups : ["default"],
         status: health,

@@ -44,11 +44,15 @@ Status semantics (portal rendering): `1` = Active; otherwise Revoked; `expired_t
 | Function | Endpoint | Notes |
 |---|---|---|
 | `getModels` | `GET /api/user/models` | authenticated `ModelInfo[]` |
-| `getPricing` | `GET /api/pricing` | public `PricingModel[]`: model_name, vendor_id, model_ratio, model_price, completion_ratio, quota_type, owner_by, enable_groups?, supported_endpoint_types? — pricing page source (FR-2.2) |
+| `getPricing` | `GET /api/pricing` | public `PricingModel[]`: model_name, vendor_id, model_ratio, model_price, completion_ratio, quota_type, owner_by, enable_groups?, supported_endpoint_types?, billing_mode?, billing_expr? — pricing page source (FR-2.2) |
 | `getModelStatus` | `GET /api/status/models` | public `ModelStatus[]` inside `data.models`: name, request_count, success_rate (null = no traffic yet), avg_latency_ms?, probe {checked, alive, test_time, latency_ms} |
 | `getPerformanceMetrics` | `GET /api/perf-metrics/summary?hours=24` | public performance data inside `data.models`: model_name, avg_latency_ms, success_rate, avg_tps |
 
-Price derivation (models page): for `quota_type: 0`, mzđ per 1M tokens = `model_ratio × 500_000`; output uses `completion_ratio`. For `quota_type: 1`, the backend price is USD per request (`model_price`), so the page converts it to mzđ per request as `model_price × 500_000` and leaves output as `—`. Health, latency, success rate, and TPS use the performance-metrics endpoint when present, with status probes as fallback. Uptime sparklines are not shown.
+Price derivation (models page):
+- When `billing_expr` is present (tiered expression billing): parsed via `@/lib/pricing` to extract prompt rate `p`, completion rate `c`, or `fixed` request price. Coefficients in $/1M tokens or $/request convert to mzđ at 500,000 mzđ/USD (`p × 500_000`, `c × 500_000`, `fixed × 500_000`).
+- For standard token models (`quota_type: 0` without expression): mzđ per 1M tokens = `model_ratio × 500_000`; output uses `completion_ratio`.
+- For per-request models (`quota_type: 1` without expression): backend price is USD per request (`model_price`), so the page converts it to mzđ per request as `model_price × 500_000` and leaves output as `—`.
+Health, latency, success rate, and TPS use the performance-metrics endpoint when present, with status probes as fallback. Uptime sparklines are not shown.
 
 ## Quota data
 
