@@ -8,7 +8,7 @@ import { VoucherDialog } from "@/components/voucher-dialog";
 /** LogTypeTopup = 1 in the backend */
 const LOG_TYPE_TOPUP = 1;
 
-interface ParsedTopUp {
+export interface ParsedTopUp {
   label: string;
   quota: number | null;
   money: string | null;
@@ -17,45 +17,53 @@ interface ParsedTopUp {
 /**
  * Parse backend log content into a structured top-up record.
  */
-function parseTopUp(content: string): ParsedTopUp {
-  // Voucher redeem: "通过兑换码充值 500000.000000 mzđ 额度，兑换码ID 97"
+// Matches a custom-currency quota amount on either side of its symbol:
+// "mzđ500000.000000" (prefix, current backend) or "500000.000000 mzđ" (postfix, older logs).
+const CUSTOM_QUOTA_RE = /(?:mzđ\s*([\d.]+)|([\d.]+)\s*mzđ)/i;
+
+export function parseTopUp(content: string): ParsedTopUp {
+  // Voucher redeem: "通过兑换码充值 mzđ500000.000000 额度，兑换码ID 97"
   if (content.includes("兑换码")) {
-    const m = content.match(/充值\s+([\d.]+)\s*mzđ/i);
+    const m = content.match(CUSTOM_QUOTA_RE);
+    const value = m ? (m[1] ?? m[2]) : null;
     return {
       label: "Nạp bằng voucher",
-      quota: m ? Math.round(Number(m[1])) : null,
+      quota: value ? Math.round(Number(value)) : null,
       money: null,
     };
   }
 
-  // Mezon on-chain: "Mezon top-up successful: transferred 1000000 dong, credited 1000000 mzđ (1:1), tx ..."
+  // Mezon on-chain: "Mezon top-up successful: transferred 1000000 dong, credited mzđ1000000 (1:1), tx ..."
   if (content.includes("Mezon top-up")) {
-    const qm = content.match(/credited\s+([\d.]+)\s*mzđ/i);
+    const qm = content.match(CUSTOM_QUOTA_RE);
     const dm = content.match(/transferred\s+([\d.]+)\s*dong/i);
+    const qvalue = qm ? (qm[1] ?? qm[2]) : null;
     return {
       label: "Nạp qua Mezon",
-      quota: qm ? Math.round(Number(qm[1])) : null,
+      quota: qvalue ? Math.round(Number(qvalue)) : null,
       money: dm ? `${Number(dm[1]).toLocaleString("vi-VN")}đ` : null,
     };
   }
 
-  // Waffo Pancake: "Waffo Pancake充值成功，充值额度: %v，支付金额: %.2f"
+  // Waffo Pancake: "Waffo Pancake充值成功，充值额度: mzđ500000.000000，支付金额: %.2f"
   if (content.includes("Waffo") || content.includes("Pancake")) {
-    const qm = content.match(/充值额度:\s*([\d.]+)/);
-    const dm = content.match(/支付金额:\s*([\d.]+)/);
+    const qm = content.match(/充值额度[:：]\s*mzđ?\s*([\d.]+)|充值额度[:：]\s*([\d.]+)\s*mzđ/i);
+    const dm = content.match(/支付金额[:：]\s*([\d.]+)/);
+    const qvalue = qm ? (qm[1] ?? qm[2]) : null;
     return {
       label: "Nạp qua Waffo Pancake",
-      quota: qm ? Math.round(Number(qm[1])) : null,
+      quota: qvalue ? Math.round(Number(qvalue)) : null,
       money: dm ? `${Number(dm[1]).toLocaleString("vi-VN")}đ` : null,
     };
   }
 
-  // Generic top-up
+  // Generic top-up (online payment, subscription-as-topup, etc.)
   if (content.includes("充值")) {
-    const m = content.match(/充值\s*([\d.]+)/);
+    const m = content.match(CUSTOM_QUOTA_RE) ?? content.match(/充值[^\d]*?([\d.]+)/);
+    const value = m ? (m[1] ?? m[2]) : null;
     return {
       label: "Nạp quota",
-      quota: m ? Math.round(Number(m[1])) : null,
+      quota: value ? Math.round(Number(value)) : null,
       money: null,
     };
   }
