@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createSession, setSessionCookie } from "@/lib/auth";
 import {
   decodeChannelAppHashData,
+  describeSyncError,
   syncMezonIdentitySession,
   validateMezonChannelAppData,
 } from "@/lib/mezon-auth";
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     setSessionCookie(response, sessionToken);
     return response;
   } catch (error) {
-    console.error("Channel App user sync failed:", error);
+    console.error("Channel App user sync failed:", describeSyncError(error));
     return NextResponse.json(
       { success: false, error: "user_sync_failed" },
       { status: 500 },
@@ -95,7 +96,7 @@ export async function GET(request: NextRequest) {
     setSessionCookie(response, sessionToken);
     return response;
   } catch (error) {
-    console.error("Channel App user sync failed:", error);
+    console.error("Channel App user sync failed:", describeSyncError(error));
     return NextResponse.redirect(loginUrlWithError(request, "user_sync_failed"));
   }
 }

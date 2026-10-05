@@ -2,7 +2,6 @@
 import { createHmac, createHash } from "crypto";
 import { describe, it, expect } from "vitest";
 import { createSession, isBackendTokenExpiring, verifySession, sessionCookieOptions } from "./auth";
-import { deriveSyncPassword } from "./api";
 import { validateMezonChannelAppData } from "./mezon-auth";
 import { SignJWT } from "jose";
 
@@ -77,21 +76,6 @@ describe("Auth Library (src/lib/auth.ts)", () => {
     expect(isBackendTokenExpiring({ backendExpiresAt: undefined }, now)).toBe(true);
     expect(isBackendTokenExpiring({ backendExpiresAt: 1_700_000_100 }, now)).toBe(true);
     expect(isBackendTokenExpiring({ backendExpiresAt: 1_700_000_600 }, now)).toBe(false);
-  });
-});
-
-describe("Deterministic Password Sync (deriveSyncPassword)", () => {
-  it("derives deterministic hash for same user ID", async () => {
-    const pass1 = await deriveSyncPassword("mezon_user_123");
-    const pass2 = await deriveSyncPassword("mezon_user_123");
-    expect(pass1).toBe(pass2);
-    expect(pass1).toMatch(/^[0-9a-f]{64}$/); // SHA-256 hex string
-  });
-
-  it("derives different passwords for different user IDs", async () => {
-    const passA = await deriveSyncPassword("user_A");
-    const passB = await deriveSyncPassword("user_B");
-    expect(passA).not.toBe(passB);
   });
 });
 

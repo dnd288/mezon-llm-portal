@@ -403,74 +403,28 @@ export async function getUserQuotaDates(
 // Portal↔backend identity sync
 // ──────────────────────────────────────────────
 
-/**
- * Deterministic new-api password for a Mezon identity. The portal never
- * stores credentials: the server re-derives this value on demand (HMAC over
- * a server-only secret), so it can always mint a backend login session for
- * a synced user.
- */
-export async function deriveSyncPassword(mezonUserId: string): Promise<string> {
-  const secret =
-    process.env.NEW_API_SYNC_SECRET ||
-    process.env.JWT_SECRET ||
-    "change-me-to-a-random-64-char-string";
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    encoder.encode(mezonUserId),
-  );
-  return [...new Uint8Array(signature)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-/**
- * Reset a user's password via the admin API. The backend PUT zeroes fields
- * absent from the payload (group was observed to vanish), so callers must
- * pass the account's current group through.
- */
-export async function adminUpdateUserPassword(
-  payload: {
-    id: number;
-    username: string;
-    display_name: string;
-    password: string;
-    group?: string;
-  },
-  opts: ApiOptions,
-): Promise<AdminMutationResult> {
-  return request<AdminMutationResult>("/api/user/", {
-    ...opts,
-    method: "PUT",
-    body: JSON.stringify(payload),
-  });
-}
-
 export interface BackendLoginSession {
   accessToken: string;
   expiresAt: number;
 }
 
-/** Password login against new-api; returns the backend session token. */
-export async function loginUser(
-  username: string,
-  password: string,
+/**
+ * Mint a short-lived new-api access token for a common user the portal has
+ * already authenticated through Mezon. The admin token stands in for the
+ * user's password; new-api refuses admins and disabled accounts.
+ */
+export async function adminIssueUserSession(
+  userId: number,
+  opts: ApiOptions,
 ): Promise<BackendLoginSession> {
   const res = await request<{
     success: boolean;
-    data: { access_token: string; access_expires_at: number };
-  }>("/api/user/login", {
-    method: "POST",
-    body: JSON.stringify({ username, password }),
-  });
+    message?: string;
+    data?: { access_token: string; access_expires_at: number };
+  }>(`/api/user/${userId}/session`, { ...opts, method: "POST" });
+  if (!res.success || !res.data?.access_token) {
+    throw new Error(res.message || "new-api refused to issue a user session");
+  }
   return {
     accessToken: res.data.access_token,
     expiresAt: res.data.access_expires_at,
@@ -485,6 +439,11 @@ export interface AdminMutationResult {
   message?: string;
 }
 
+/**
+ * Create a common user. new-api requires a password, but the portal never
+ * signs in with it (see `adminIssueUserSession`), so callers pass a random
+ * throwaway value.
+ */
 export async function adminCreateUser(payload: {
   username: string;
   display_name: string;
@@ -503,7 +462,7 @@ export interface AdminUserSummary {
   display_name?: string;
   role?: number;
   status?: number;
-  /** Backend access group (e.g. "default", "vip"); PUT wipes it when absent */
+  /** Backend access group (e.g. "default", "vip") */
   group?: string;
 }
 

@@ -346,25 +346,12 @@ const server = Bun.serve({
       return json({ success: true, message: "Created" });
     }
 
-    if (method === "PUT" && path === "/api/user/") {
-      const body = (await req.json().catch(() => ({}))) as {
-        username?: string;
-        display_name?: string;
-      };
-      user = {
-        ...user,
-        username: body.username || user.username,
-        display_name: body.display_name || user.display_name,
-      };
-      return json({ success: true, message: "Updated" });
-    }
-
-    if (method === "POST" && path === "/api/user/login") {
+    if (method === "POST" && /^\/api\/user\/\d+\/session$/.test(path)) {
       return json({
         success: true,
         data: {
           access_token: "mock-backend-session-token",
-          access_expires_at: Math.floor(Date.now() / 1000) + 86400,
+          access_expires_at: Math.floor(Date.now() / 1000) + 900,
         },
       });
     }

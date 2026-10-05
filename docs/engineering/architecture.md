@@ -49,9 +49,9 @@ State placement: **server is the source of truth**. Pages read through `api.ts` 
 
 ## Session model
 
-JWT (`jose`, HS256) in httpOnly cookie `session`, 90 days. Claims: `userId` (new-api), `accessToken` (Mezon OAuth token — userinfo only), `backendAccessToken` (new-api login session token — authorizes all user-scoped calls), `backendExpiresAt`, `username`, `mezonUserId`. Detailed flow: [authentication.md](authentication.md).
+JWT (`jose`, HS256) in httpOnly cookie `session`, 90 days. Claims: `userId` (new-api), `accessToken` (Mezon OAuth token — userinfo only), `backendAccessToken` (new-api access token issued by `adminIssueUserSession` — authorizes all user-scoped calls), `backendExpiresAt`, `username`, `mezonUserId`. Detailed flow: [authentication.md](authentication.md).
 
-Critical property: `backendAccessToken` is the credential passed to user-scoped new-api calls; it is minted at OAuth callback time via a deterministic server-derived login and leaves the cookie only inside server code.
+Critical property: `backendAccessToken` is the credential passed to user-scoped new-api calls; it is issued by new-api's admin `POST /api/user/:id/session` at login and on renewal ([ADR 0002](../adr/0002-admin-issued-backend-sessions.md)), and leaves the cookie only inside server code.
 
 ## Package layout
 
@@ -68,7 +68,7 @@ Dependencies are deliberately thin: `next`, `react`, `jose`, shadcn/ui (base-ui)
 ## Invariants reviewers apply
 
 1. No import of `src/lib/api.ts` from a Client Component (`'use client'`).
-2. No `NEW_API_ADMIN_TOKEN` usage outside the OAuth callback's user-sync path (`src/app/api/auth/callback/route.ts` + `api.ts` admin functions).
+2. No `NEW_API_ADMIN_TOKEN` usage outside user sync (`src/lib/mezon-auth.ts`) and backend-token renewal (`src/lib/auth.ts`), both through `api.ts` admin functions.
 3. No Go code, migrations, or relay logic in this repo — backend lives in `~/src/mezon-llm`.
 4. New user-visible page ⇒ must be reachable via middleware/layout guard rules consistent with FR-1.4/FR-1.5.
 5. Quota display always flows through `src/lib/quota.ts` formatters — 500,000 quota = $1, don't re-derive.

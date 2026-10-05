@@ -7,10 +7,9 @@ What `src/lib/api.ts` consumes. Base URL: `NEW_API_BASE_URL` (default `https://l
 | Function | Endpoint | Notes |
 |---|---|---|
 | `getSelf` | `GET /api/user/self` | `UserSelf`: id, username, display_name, quota, used_quota, request_count, etc. |
-| `loginUser` | `POST /api/user/login` | `{username, password}` → `{access_token, access_expires_at, user}`; backend session token for user-scoped calls |
 | `adminSearchUsers` | `GET /api/user/search?keyword` | admin token; keyword = derived portal username; **paginated envelope** — users live in `data.items`, not `data` |
-| `adminCreateUser` | `POST /api/user/` | admin token; username, display_name, deterministic sync password; returns `{success, message}` — business failures arrive with HTTP 200 |
-| `adminUpdateUserPassword` | `PUT /api/user/` | admin token; `{id, username, display_name, password}` — re-syncs portal-owned account passwords |
+| `adminCreateUser` | `POST /api/user/` | admin token; username, display_name, random throwaway password; returns `{success, message}` — business failures arrive with HTTP 200 |
+| `adminIssueUserSession` | `POST /api/user/:id/session` | admin token; → `{access_token, access_expires_at}` (15 min) for a common, enabled user; backend token for user-scoped calls. Business refusals arrive with HTTP 200 and `success: false` |
 
 ## Tokens (API keys)
 
