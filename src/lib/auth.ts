@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
-import { deriveSyncPassword, loginUser } from "@/lib/api";
-import { getBackendUsernameCandidates } from "@/lib/backend-identity";
+import { adminIssueUserSession } from "@/lib/api";
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "change-me-to-a-random-64-char-string",
@@ -17,7 +16,7 @@ export interface SessionPayloadBase {
   accessToken: string;
   /** new-api login username */
   backendUsername?: string;
-  /** new-api login session token; authorizes all user-scoped backend calls */
+  /** new-api access token minted by adminIssueUserSession; authorizes all user-scoped backend calls */
   backendAccessToken: string;
   /** unix seconds when backendAccessToken expires */
   backendExpiresAt?: number;
@@ -63,34 +62,27 @@ export function isBackendTokenExpiring(
   return session.backendExpiresAt <= Math.floor(now / 1000) + BACKEND_TOKEN_REFRESH_SKEW_SECONDS;
 }
 
+/**
+ * Renew the new-api access token for the user the portal session already
+ * names. The admin token acts for that user, so no password or new-api
+ * refresh cookie is involved and the portal session outlives every backend
+ * token it carries.
+ */
 export async function refreshBackendSessionPayload(
   session: SessionPayload,
 ): Promise<SessionPayloadBase> {
-  const candidates = session.backendUsername
-    ? [session.backendUsername]
-    : await getBackendUsernameCandidates(session.username, session.mezonUserId);
-  const password = await deriveSyncPassword(session.mezonUserId);
-  let refreshedBackendSession: Awaited<ReturnType<typeof loginUser>> | null = null;
-  let refreshedBackendUsername = candidates[0];
-
-  for (const candidate of candidates) {
-    try {
-      refreshedBackendSession = await loginUser(candidate, password);
-      refreshedBackendUsername = candidate;
-      break;
-    } catch {}
+  const adminToken = process.env.NEW_API_ADMIN_TOKEN;
+  if (!adminToken) {
+    throw new Error("NEW_API_ADMIN_TOKEN is not configured");
   }
-
-  if (!refreshedBackendSession) {
-    throw new Error("Unable to refresh backend session");
-  }
+  const refreshed = await adminIssueUserSession(session.userId, { adminToken });
 
   return {
     userId: session.userId,
     accessToken: session.accessToken,
-    backendUsername: refreshedBackendUsername,
-    backendAccessToken: refreshedBackendSession.accessToken,
-    backendExpiresAt: refreshedBackendSession.expiresAt,
+    backendUsername: session.backendUsername,
+    backendAccessToken: refreshed.accessToken,
+    backendExpiresAt: refreshed.expiresAt,
     username: session.username,
     mezonUserId: session.mezonUserId,
   };

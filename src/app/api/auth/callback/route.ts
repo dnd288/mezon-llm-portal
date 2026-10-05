@@ -3,7 +3,7 @@ import {
   createSession,
   sessionCookieOptions,
 } from "@/lib/auth";
-import { syncMezonIdentitySession } from "@/lib/mezon-auth";
+import { describeSyncError, syncMezonIdentitySession } from "@/lib/mezon-auth";
 
 const MEZON_TOKEN_URL =
   process.env.MEZON_TOKEN_URL || "https://oauth2.mezon.ai/oauth2/token";
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
         accessToken: mezonAccessToken,
       });
     } catch (syncError) {
-      console.error("new-api user sync failed:", syncError);
+      console.error("new-api user sync failed:", describeSyncError(syncError));
       return NextResponse.redirect(
         new URL("/login?error=user_sync_failed", request.url),
       );

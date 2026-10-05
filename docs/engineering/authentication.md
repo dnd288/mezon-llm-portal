@@ -47,22 +47,20 @@ Logout: `GET /api/auth/logout` clears the session cookie. Session introspection:
 
 ## User sync and backend credentials
 
-OAuth callback and Channel App auth both exchange a verified Mezon identity for a new-api user, then mint a backend login session:
+OAuth callback and Channel App auth both exchange a verified Mezon identity for a new-api user, then ask new-api for a backend access token for that user ([ADR 0002](../adr/0002-admin-issued-backend-sessions.md)):
 
 1. Build candidate new-api usernames in anchor order:
    - the **Mezon username** (`duong.nguyen`) when it fits new-api's 20-char + charset constraints — attaches to hand-created team accounts;
    - `mezon_<user_id>` when it fits (legacy short-id accounts);
    - `mz_<sha256(mezonUserId)>` (deterministic last resort).
 2. For each candidate, `adminSearchUsers`; an **exact** username match adopts that account. Substring matches from the backend's LIKE search are rejected. Adoption refuses accounts with `role !== 1` (would leak elevated rights into the portal) or `status !== 1` (disabled).
-3. Adopt ⇒ `adminUpdateUserPassword` re-syncs the account password to the deterministic value (hand-created accounts and legacy portal ghosts included).
-4. Miss on all candidates ⇒ `adminCreateUser` under the highest-priority anchor with `password = deriveSyncPassword(mezonUserId)`.
-5. `loginUser(<adopted-or-created username>, deriveSyncPassword(mezonUserId))` → backend `access_token` + `access_expires_at`.
+3. Adopt ⇒ use the account as is. Its password is left untouched.
+4. Miss on all candidates ⇒ `adminCreateUser` under the highest-priority anchor with a random throwaway password (new-api requires one; Portal never signs in with it).
+5. `adminIssueUserSession(<new-api user id>)` → `POST /api/user/:id/session` → backend `access_token` + `access_expires_at` (15 minutes). new-api reuses the user's live `portal` login session and refuses admins and disabled users.
 
-`deriveSyncPassword` = `HMAC-SHA256(NEW_API_SYNC_SECRET || JWT_SECRET, mezonUserId)` — deterministic, never stored: the server can always re-derive it and mint a fresh backend session.
+No password is derived, reset, or used. Login never touches new-api's step-up-protected admin password reset.
 
-**Adoption takes over credentials.** When a Mezon username matches a hand-created new-api account, the deterministic sync password replaces that account's old password — direct backend logins then require the admin to reset it. This is the linking mechanism, documented deliberately.
-
-The admin token (`NEW_API_ADMIN_TOKEN`) is used **only** on the sync path. `MEZON_CLIENT_SECRET`, `MEZON_APP_SECRET`, `JWT_SECRET`, backend session tokens, and admin tokens never appear in a response, log, or client payload.
+The admin token (`NEW_API_ADMIN_TOKEN`) is used only on the sync path and the backend-token renewal path. `MEZON_CLIENT_SECRET`, `MEZON_APP_SECRET`, `JWT_SECRET`, backend session tokens, and admin tokens never appear in a response, log, or client payload.
 
 ## Session cookie
 
@@ -74,7 +72,7 @@ The admin token (`NEW_API_ADMIN_TOKEN`) is used **only** on the sync path. `MEZO
 | Flags | httpOnly, SameSite=Lax, `secure` in production, path `/` |
 | Claims | `userId` (new-api numeric id), `accessToken` (Mezon OAuth token — userinfo only), `backendUsername`, `backendAccessToken` (new-api session token — authorizes all user-scoped calls), `backendExpiresAt`, `username`, `mezonUserId` |
 
-All new-api calls from pages and `/api/portal/*` routes pass `backendAccessToken`. When the backend token is missing, expired, or within the refresh skew, Portal re-logins to new-api server-side with the deterministic sync password, issues a new Portal session cookie, and keeps browser credentials unchanged.
+All new-api calls from pages and `/api/portal/*` routes pass `backendAccessToken`. When the backend token is missing, expired, or within the refresh skew, Portal calls `adminIssueUserSession(session.userId)` server-side, issues a new Portal session cookie, and keeps browser credentials unchanged. The user signs in again only when the Portal session itself expires (`SESSION_MAX_AGE`) or new-api refuses the user (disabled, or promoted to admin).
 
 ## Route protection — two layers
 
@@ -97,13 +95,14 @@ Note `/models` is public and unguarded (FR-2.2); `/vouchers` is guarded.
 | Channel App env not configured (`MEZON_APP_SECRET`, falling back to `MEZON_CLIENT_SECRET`) | 500 JSON `channel_app_not_configured` |
 | Channel App payload missing/malformed/stale/tampered | 400/401 JSON error; login page displays Channel App failure and keeps OAuth login available |
 | User sync | Redirect `/login?error=user_sync_failed` or 500 JSON `user_sync_failed` |
-| Backend login after sync | Redirect `/login?error=user_sync_failed` or 500 JSON `user_sync_failed` |
+| Backend session issuance after sync | Redirect `/login?error=user_sync_failed` or 500 JSON `user_sync_failed` |
+| Backend session renewal refused (user disabled or promoted) | Pages redirect `/login?error=backend_refresh_failed`; `/api/portal/*` returns 401 |
 | Unexpected callback error | Redirect `/login?error=internal_error` |
 | Expired/tampered session cookie | `getSession()` → null → page redirects to login; middleware alone would pass presence |
 
 ## Environment
 
-See `.env.example`. All of: `MEZON_CLIENT_ID`, `MEZON_CLIENT_SECRET`, `MEZON_APP_SECRET` (Channel App hash verification; falls back to `MEZON_CLIENT_SECRET` for compatible deployments), `MEZON_REDIRECT_URI`, `MEZON_AUTH_URL`, `MEZON_TOKEN_URL`, `MEZON_USERINFO_URL`, `NEW_API_BASE_URL`, `NEW_API_ADMIN_TOKEN`, `NEW_API_SYNC_SECRET` (optional — falls back to `JWT_SECRET`), `JWT_SECRET`, `SESSION_MAX_AGE`. Optional: `MEZON_CHANNEL_APP_AUTH_MAX_AGE_SECONDS` (default 86400).
+See `.env.example`. All of: `MEZON_CLIENT_ID`, `MEZON_CLIENT_SECRET`, `MEZON_APP_SECRET` (Channel App hash verification; falls back to `MEZON_CLIENT_SECRET` for compatible deployments), `MEZON_REDIRECT_URI`, `MEZON_AUTH_URL`, `MEZON_TOKEN_URL`, `MEZON_USERINFO_URL`, `NEW_API_BASE_URL`, `NEW_API_ADMIN_TOKEN`, `JWT_SECRET`, `SESSION_MAX_AGE`. Optional: `MEZON_CHANNEL_APP_AUTH_MAX_AGE_SECONDS` (default 86400).
 
 ## Userinfo claims (Mezon mapping)
 

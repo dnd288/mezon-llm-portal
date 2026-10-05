@@ -1,11 +1,9 @@
-import { createHmac, createHash, timingSafeEqual } from "crypto";
+import { createHmac, createHash, randomBytes, timingSafeEqual } from "crypto";
 import {
   type AdminUserSummary,
   adminCreateUser,
+  adminIssueUserSession,
   adminSearchUsers,
-  adminUpdateUserPassword,
-  deriveSyncPassword,
-  loginUser,
 } from "@/lib/api";
 import { getBackendUsernameCandidates } from "@/lib/backend-identity";
 import type { SessionPayloadBase } from "@/lib/auth";
@@ -117,6 +115,18 @@ export function validateMezonChannelAppData(
   }
 }
 
+/**
+ * Flatten a sync failure into one string. Cloudflare `wrangler tail` prints
+ * only the stack frames of an Error and drops its message, so log this
+ * instead of the raw error object.
+ */
+export function describeSyncError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const body = (error as { body?: unknown }).body;
+  const detail = body === undefined ? "" : ` body=${JSON.stringify(body)}`;
+  return `${error.name}: ${error.message}${detail}`;
+}
+
 export async function syncMezonIdentitySession(
   identity: MezonIdentityInput,
 ): Promise<SessionPayloadBase> {
@@ -152,26 +162,14 @@ export async function syncMezonIdentitySession(
   if (adopted) {
     newApiUserId = adopted.id;
     backendUsername = adopted.username;
-    const updated = await adminUpdateUserPassword(
-      {
-        id: adopted.id,
-        username: adopted.username,
-        display_name: adopted.display_name || identity.displayName,
-        password: await deriveSyncPassword(identity.mezonUserId),
-        group: adopted.group,
-      },
-      { adminToken: NEW_API_ADMIN_TOKEN },
-    );
-    if (updated?.success === false) {
-      throw new Error(updated.message ?? "new-api password sync rejected");
-    }
   } else {
     const createName = candidates[0];
     const created = await adminCreateUser(
       {
         username: createName,
         display_name: identity.displayName,
-        password: await deriveSyncPassword(identity.mezonUserId),
+        // Required by new-api, never used: sessions come from adminIssueUserSession.
+        password: randomBytes(32).toString("hex"),
       },
       { adminToken: NEW_API_ADMIN_TOKEN },
     );
@@ -193,10 +191,9 @@ export async function syncMezonIdentitySession(
     throw new Error("Failed to sync user with new-api");
   }
 
-  const backendSession = await loginUser(
-    backendUsername,
-    await deriveSyncPassword(identity.mezonUserId),
-  );
+  const backendSession = await adminIssueUserSession(newApiUserId, {
+    adminToken: NEW_API_ADMIN_TOKEN,
+  });
 
   return {
     userId: newApiUserId,

@@ -1,6 +1,6 @@
 # ADR 0001: Mezon OAuth with JWT session; portal as pure proxy to new-api
 
-Status: Accepted (2026-09-10)
+Status: Accepted (2026-09-10); the deterministic sync password in decision 1 and its renewal consequence are superseded by [ADR 0002](0002-admin-issued-backend-sessions.md)
 Deciders: maintainer
 
 ## Context
