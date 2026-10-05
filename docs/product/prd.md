@@ -28,7 +28,7 @@ Mezon LLM Portal is the customer portal for [Mezon LLM](https://llm.mrdnd.dev), 
 
 - **FR-1.1** The portal SHALL authenticate users via Mezon OAuth 2.0 (authorization code flow) with `openid offline` scope and CSRF `state` verification.
 - **FR-1.2** On first login the portal SHALL provision a corresponding user in new-api via the admin token; subsequent logins SHALL look up the existing user by Mezon identity.
-- **FR-1.3** The portal SHALL issue a signed JWT session in an httpOnly `session` cookie (24h default) and expose it only to server code.
+- **FR-1.3** The portal SHALL issue a signed JWT session in an httpOnly `session` cookie (90 days default) and expose it only to server code.
 - **FR-1.4** Protected routes (`/dashboard`, `/tokens`, `/logs`, `/vouchers`) SHALL redirect unauthenticated visitors to `/login` preserving the original path as `callbackUrl`.
 - **FR-1.5** A logged-in user visiting `/login` SHALL be redirected to `/dashboard`.
 

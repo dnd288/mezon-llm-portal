@@ -7,7 +7,7 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "change-me-to-a-random-64-char-string",
 );
 
-const SESSION_MAX_AGE = Number(process.env.SESSION_MAX_AGE) || 86400; // 24h
+const SESSION_MAX_AGE = Number(process.env.SESSION_MAX_AGE) || 7776000; // 90 days
 const BACKEND_TOKEN_REFRESH_SKEW_SECONDS = 300;
 
 export interface SessionPayloadBase {
