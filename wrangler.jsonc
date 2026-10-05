@@ -17,7 +17,7 @@
 		"MEZON_TOKEN_URL": "https://oauth2.mezon.ai/oauth2/token",
 		"MEZON_USERINFO_URL": "https://oauth2.mezon.ai/userinfo",
 		"NEW_API_BASE_URL": "https://llm.mrdnd.dev",
-		"SESSION_MAX_AGE": "86400",
+		"SESSION_MAX_AGE": "7776000",
 		"NEXT_PUBLIC_APP_URL": "https://mezon-llm.mrdnd.dev",
 		"NEXT_PUBLIC_APP_NAME": "Mezon LLM"
 	},

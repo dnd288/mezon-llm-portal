@@ -68,7 +68,7 @@ cp .env.example .env.local
 | `NEW_API_BASE_URL` | URL backend mezon-llm (mặc định: `https://llm.mrdnd.dev`) |
 | `NEW_API_ADMIN_TOKEN` | Admin token để đồng bộ user |
 | `JWT_SECRET` | Chuỗi ngẫu nhiên 64 ký tự cho JWT session |
-| `SESSION_MAX_AGE` | Thời gian sống session, giây (mặc định: `86400`) |
+| `SESSION_MAX_AGE` | Thời gian sống session, giây (mặc định: `7776000` = 90 ngày) |
 | `NEXT_PUBLIC_APP_URL` | URL gốc của portal (mặc định: `http://localhost:3000`) |
 | `NEXT_PUBLIC_APP_NAME` | Tên hiển thị của sản phẩm (mặc định: `Mezon LLM`) |
 

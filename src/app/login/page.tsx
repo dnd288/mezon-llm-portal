@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChannelAppLogin } from "@/components/channel-app-login";
@@ -57,7 +56,7 @@ export default async function LoginPage({
 
         {/* Login button */}
         <div className="relative mt-6">
-          <Link
+          <a
             href="/api/auth/login"
             className={cn(
               buttonVariants({ size: "lg" }),
@@ -73,7 +72,7 @@ export default async function LoginPage({
               height={28}
               className="h-[28px] w-auto brightness-0 invert"
             />
-          </Link>
+          </a>
         </div>
         <ChannelAppLogin hashData={channelAppData} />
 

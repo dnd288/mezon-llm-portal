@@ -49,7 +49,7 @@ State placement: **server is the source of truth**. Pages read through `api.ts` 
 
 ## Session model
 
-JWT (`jose`, HS256) in httpOnly cookie `session`, 24h. Claims: `userId` (new-api), `accessToken` (Mezon OAuth token — userinfo only), `backendAccessToken` (new-api login session token — authorizes all user-scoped calls), `backendExpiresAt`, `username`, `mezonUserId`. Detailed flow: [authentication.md](authentication.md).
+JWT (`jose`, HS256) in httpOnly cookie `session`, 90 days. Claims: `userId` (new-api), `accessToken` (Mezon OAuth token — userinfo only), `backendAccessToken` (new-api login session token — authorizes all user-scoped calls), `backendExpiresAt`, `username`, `mezonUserId`. Detailed flow: [authentication.md](authentication.md).
 
 Critical property: `backendAccessToken` is the credential passed to user-scoped new-api calls; it is minted at OAuth callback time via a deterministic server-derived login and leaves the cookie only inside server code.
 
